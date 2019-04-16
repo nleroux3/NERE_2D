@@ -7,9 +7,8 @@
 #include <armadillo>
 //#include <eigen3/Dense>
 
-
-const int Nx = 50; // Number of cells in lateral direction
-const int Ny = 50; // Number of cells in vertical direction
+const int Nx = 50,  // Number of cells in lateral direction
+          Ny = 50;  // Number of cells in vertical direction
 
 double KFun(double , double , double);
 
@@ -28,6 +27,7 @@ int main() {
     clock_t tStart = clock();
 
 
+
     double  Lx = 0.2, // [m]
             Ly_ini = 0.2,
             nu = 1.7e-6,
@@ -41,36 +41,24 @@ int main() {
             time = 0.,
             tolerance = 0.01, // relative truncation error tolerances
             r_min = 0.1,
-            r_max = 4.,
             EPS = 1e-10,
             s = 0.6,
             dt_new,
             relative_error,
-            dt_ini = 0.5,
-            Hn_ini = 0., // Input heat flux [W/m2],
-            Ts_ini = 0., // Initial snow surface temperature [C]
-            T_ini =  0.,
+            dt_ini = 0.1,
             theta_ini = epsilon,
-            Qbottom = 0.,
             dt,
             rhoI = 917., // density of ice [kg/m3]
-            Cpi = 2110., // Heat capacity of ice [J/kg/K]
-            Lf = 338000., // Latent heat of fusion [J/kg]
-            rhoW = 1000., // density of water [kg/m3]
-            Cpw = 4181.3,
-            total_fluxes_BC = 0.,
             error = 0,
             dryRho_ini = 300.,
             Dgrain_ini = 1e-3;
 
 
-    const int nt = int(tf / dt_ini),
-              tPlot = 60; // Time interval for plotting [s]
+    const int tPlot = 60; // Time interval for plotting [s]
 
 
     int     wrc[Ny][Nx],
-            wrc_new[Ny][Nx],
-            M = Ny; //  0 : initial condition is T, 1: initial condition is theta
+            wrc_new[Ny][Nx]; //  0 : initial condition is T, 1: initial condition is theta
 
     double  x[Ny][Nx],
             y[Ny][Nx],
@@ -197,7 +185,7 @@ int main() {
 
 
 
-    while (time < 50.) {
+    while (time < tf) {
 
 
 
@@ -210,26 +198,25 @@ int main() {
         //==================== Compute theta_p (intermediate value) (forward Euler) =========================
 
 
-        arma::vec delta_theta_p = Richards(tau_0, Swf, lambda, K, dx, dy, psi, qIn, M);
+        arma::vec delta_theta_p = Richards(tau_0, Swf, lambda, K, dx, dy, psi, qIn, Ny);
 
         again_hydrology:
 
         k = 0;
 
-        for (int j = 0; j < M; ++j) {
+        for (int j = 0; j < Ny; ++j) {
             for (int i = 0; i < Nx; ++i) {
 
                 theta_p[j][i] = theta[j][i] + dt * delta_theta_p(k); // new theta predicted using Euler
 
                 if (theta_p[j][i] > (0.9 * porosity[j][i]) ) { // If it goes above saturation, excess of water goes to the cell below (included in delta_theta)
                     dt = dt * 0.8;
-//                    std::cout << 111 << std::endl;
+
                     goto again_hydrology;
                 }
 
                 if (theta_p[j][i] <= thetaR[j][i] and abs(theta_p[j][i] - thetaR[j][i])  >= 1e-6 ) { // If it goes above saturation, excess of water goes to the cell below (included in delta_theta
                     dt = dt * 0.8;
-//                    std::cout << 222 << std::endl;
 
                     goto again_hydrology;
 
@@ -252,13 +239,11 @@ int main() {
 
                 if (theta_p[j][i] <= thetaR1 and abs(theta_p[j][i] - thetaR1)  >= 1e-6 ) { // If it goes above saturation, excess of water goes to the cell below (included in delta_theta
                     dt = dt * 0.8;
-//                    std::cout << 333 << std::endl;
 
                     goto again_hydrology;
 
                 } else if (theta_p[j][i] <= thetaR1 and abs(theta_p[j][i] - thetaR1)  < 1e-6 ){
                     theta_p[j][i] = thetaR1 + 1e-6;
-//                    std::cout << 444 << std::endl;
 
                     goto compute_psi;
 
@@ -273,19 +258,18 @@ int main() {
 
         //==================== Compute theta_new (forward Heun) =========================
 
-        arma::vec delta_theta = Richards(tau_0, Swf_new, lambda, K_new, dx, dy, psi_new, qIn, M);
+        arma::vec delta_theta = Richards(tau_0, Swf_new, lambda, K_new, dx, dy, psi_new, qIn, Ny);
 
 
         k = 0;
 
-        for (int j = 0; j < M; ++j) {
+        for (int j = 0; j < Ny; ++j) {
             for (int i = 0; i < Nx; ++i) {
 
                 theta_new[j][i] = theta[j][i] + dt * 0.5 * (delta_theta(k) + delta_theta_p(k)) ; // new theta using Heun
 
                 if (theta_new[j][i] > (0.9 * porosity[j][i])  ) { // If it goes above saturation, excess of water goes to the cell below (included in delta_theta)
                     dt = dt * 0.8;
-//                    std::cout << 555 << std::endl;
 
                     goto again_hydrology;
                 }
@@ -315,7 +299,6 @@ int main() {
         } else { // condition rejected
 
             dt_new = dt * std::max(s * sqrt(tolerance / std::max(relative_error,EPS)), r_min);
-//            std::cout << 888 << std::endl;
 
             goto again_hydrology;
 
@@ -323,7 +306,7 @@ int main() {
 
         //==================== Calculate psi_new =========================
 
-        for (int j = 0; j < M; ++j) {
+        for (int j = 0; j < Ny; ++j) {
             for (int i = 0; i < Nx; ++i) {
 
                 compute_psi1:
@@ -344,7 +327,6 @@ int main() {
 
                 } else if (theta_new[j][i] <= thetaR_new[j][i] and abs(theta_new[j][i] - thetaR_new[j][i]) < 1e-6) {
                     theta_new[j][i] = thetaR_new[j][i] + 1e-6;
-//                    std::cout << 777 << std::endl;
 
                     goto compute_psi1;
                 }
@@ -354,7 +336,7 @@ int main() {
 
 
 
-        for (int j = 0; j < M; ++j) {
+        for (int j = 0; j < Ny; ++j) {
             for (int i = 0; i < Nx; ++i) {
 
                 theta[j][i] = theta_new[j][i];
@@ -379,7 +361,6 @@ int main() {
         //=================================================================================
 
         time = time + dt;
-//        std::cout << time << std::endl;
 
         //=================================================================================
         //================ Compute mass balance and write output files  ===================
@@ -391,22 +372,17 @@ int main() {
 
                 std::cout << int(time / tPlot) << std::endl;
 
-                double total_water = 0.;
-
                 for (int i = 0; i < Nx; ++i) {
-                    for (int j = 0; j < M; j++) {
+                    for (int j = 0; j < Ny; j++) {
                         theta_output << theta[j][i] << " ";
                         grain_output << Dgrain[j][i] << " ";
                         density_output << dryRho[j][i] << " " ;
-
-                        total_water += theta[j][i] - epsilon;
                     }
 
                     outflow_output << K[0][i] << " " ;
                 }
 
 
-                mass_output << total_water / total_fluxes_BC << std::endl;
 
                 density_output << std::endl;
                 theta_output << std::endl;
@@ -426,7 +402,6 @@ int main() {
 
 
     theta_output.close();
-    mass_output.close();
     grain_output.close();
     density_output.close();
 
