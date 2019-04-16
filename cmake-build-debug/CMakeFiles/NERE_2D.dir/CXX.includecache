@@ -1,0 +1,24 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/nleroux/projects/NERE_2D/main.cpp
+iostream
+-
+math.h
+-
+time.h
+-
+algorithm
+-
+tuple
+-
+omp.h
+-
+armadillo
+-
+

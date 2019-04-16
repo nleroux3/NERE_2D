@@ -1,0 +1,5 @@
+"/Users/nleroux/Library/Application Support/JetBrains/Toolbox/apps/CLion/ch-0/191.6183.77/CLion.app/Contents/bin/cmake/mac/bin/cmake" -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /Users/nleroux/projects/NERE_2D
+-- A library with LAPACK API found.
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /Users/nleroux/projects/NERE_2D/cmake-build-debug

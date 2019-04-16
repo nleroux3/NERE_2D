@@ -1,0 +1,1 @@
+/usr/local/bin/g++-8   -std=c++11 -fopenmp -Winline -O2 -g -Wl,-search_paths_first -Wl,-headerpad_max_install_names  CMakeFiles/NERE_2D.dir/main.cpp.o  -o NERE_2D /usr/local/lib/libarmadillo.dylib -framework Accelerate -framework Accelerate 
