@@ -70,18 +70,63 @@ CMakeFiles/NERE_2D.dir/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/NERE_2D.dir/main.cpp.s"
 	/usr/local/bin/g++-8 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/nleroux/projects/NERE_2D/main.cpp -o CMakeFiles/NERE_2D.dir/main.cpp.s
 
+CMakeFiles/NERE_2D.dir/Richards.cpp.o: CMakeFiles/NERE_2D.dir/flags.make
+CMakeFiles/NERE_2D.dir/Richards.cpp.o: ../Richards.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/nleroux/projects/NERE_2D/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/NERE_2D.dir/Richards.cpp.o"
+	/usr/local/bin/g++-8  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/NERE_2D.dir/Richards.cpp.o -c /Users/nleroux/projects/NERE_2D/Richards.cpp
+
+CMakeFiles/NERE_2D.dir/Richards.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/NERE_2D.dir/Richards.cpp.i"
+	/usr/local/bin/g++-8 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/nleroux/projects/NERE_2D/Richards.cpp > CMakeFiles/NERE_2D.dir/Richards.cpp.i
+
+CMakeFiles/NERE_2D.dir/Richards.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/NERE_2D.dir/Richards.cpp.s"
+	/usr/local/bin/g++-8 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/nleroux/projects/NERE_2D/Richards.cpp -o CMakeFiles/NERE_2D.dir/Richards.cpp.s
+
+CMakeFiles/NERE_2D.dir/KFun.cpp.o: CMakeFiles/NERE_2D.dir/flags.make
+CMakeFiles/NERE_2D.dir/KFun.cpp.o: ../KFun.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/nleroux/projects/NERE_2D/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/NERE_2D.dir/KFun.cpp.o"
+	/usr/local/bin/g++-8  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/NERE_2D.dir/KFun.cpp.o -c /Users/nleroux/projects/NERE_2D/KFun.cpp
+
+CMakeFiles/NERE_2D.dir/KFun.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/NERE_2D.dir/KFun.cpp.i"
+	/usr/local/bin/g++-8 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/nleroux/projects/NERE_2D/KFun.cpp > CMakeFiles/NERE_2D.dir/KFun.cpp.i
+
+CMakeFiles/NERE_2D.dir/KFun.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/NERE_2D.dir/KFun.cpp.s"
+	/usr/local/bin/g++-8 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/nleroux/projects/NERE_2D/KFun.cpp -o CMakeFiles/NERE_2D.dir/KFun.cpp.s
+
+CMakeFiles/NERE_2D.dir/hysteresis.cpp.o: CMakeFiles/NERE_2D.dir/flags.make
+CMakeFiles/NERE_2D.dir/hysteresis.cpp.o: ../hysteresis.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/nleroux/projects/NERE_2D/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/NERE_2D.dir/hysteresis.cpp.o"
+	/usr/local/bin/g++-8  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/NERE_2D.dir/hysteresis.cpp.o -c /Users/nleroux/projects/NERE_2D/hysteresis.cpp
+
+CMakeFiles/NERE_2D.dir/hysteresis.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/NERE_2D.dir/hysteresis.cpp.i"
+	/usr/local/bin/g++-8 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/nleroux/projects/NERE_2D/hysteresis.cpp > CMakeFiles/NERE_2D.dir/hysteresis.cpp.i
+
+CMakeFiles/NERE_2D.dir/hysteresis.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/NERE_2D.dir/hysteresis.cpp.s"
+	/usr/local/bin/g++-8 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/nleroux/projects/NERE_2D/hysteresis.cpp -o CMakeFiles/NERE_2D.dir/hysteresis.cpp.s
+
 # Object files for target NERE_2D
 NERE_2D_OBJECTS = \
-"CMakeFiles/NERE_2D.dir/main.cpp.o"
+"CMakeFiles/NERE_2D.dir/main.cpp.o" \
+"CMakeFiles/NERE_2D.dir/Richards.cpp.o" \
+"CMakeFiles/NERE_2D.dir/KFun.cpp.o" \
+"CMakeFiles/NERE_2D.dir/hysteresis.cpp.o"
 
 # External object files for target NERE_2D
 NERE_2D_EXTERNAL_OBJECTS =
 
 NERE_2D: CMakeFiles/NERE_2D.dir/main.cpp.o
+NERE_2D: CMakeFiles/NERE_2D.dir/Richards.cpp.o
+NERE_2D: CMakeFiles/NERE_2D.dir/KFun.cpp.o
+NERE_2D: CMakeFiles/NERE_2D.dir/hysteresis.cpp.o
 NERE_2D: CMakeFiles/NERE_2D.dir/build.make
 NERE_2D: /usr/local/lib/libarmadillo.dylib
 NERE_2D: CMakeFiles/NERE_2D.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/Users/nleroux/projects/NERE_2D/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable NERE_2D"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/Users/nleroux/projects/NERE_2D/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX executable NERE_2D"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/NERE_2D.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

@@ -14,7 +14,7 @@ set(CMAKE_CXX_COMPILER /usr/local/bin/g++-8)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fopenmp -Winline -O2")
 
-add_executable(NERE_2D main.cpp)
+add_executable(NERE_2D main.cpp Richards.cpp Richards.h global.h KFun.cpp KFun.h hysteresis.cpp hysteresis.h)
 
 
 target_link_libraries(NERE_2D ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES})

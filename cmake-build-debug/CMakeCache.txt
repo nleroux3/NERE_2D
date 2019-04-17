@@ -505,7 +505,7 @@ CMAKE_UNAME:INTERNAL=/usr/bin/uname
 //ADVANCED property for variable: CMAKE_VERBOSE_MAKEFILE
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
 //Details about finding Armadillo
-FIND_PACKAGE_MESSAGE_DETAILS_Armadillo:INTERNAL=[/usr/local/lib/libarmadillo.dylib][/usr/local/include][v9.200.5()]
+FIND_PACKAGE_MESSAGE_DETAILS_Armadillo:INTERNAL=[/usr/local/lib/libarmadillo.dylib][/usr/local/include][v9.300.2()]
 //Details about finding BLAS
 FIND_PACKAGE_MESSAGE_DETAILS_BLAS:INTERNAL=[/System/Library/Frameworks/Accelerate.framework][v()]
 //Details about finding Threads

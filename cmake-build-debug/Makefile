@@ -123,6 +123,87 @@ NERE_2D/fast:
 	$(MAKE) -f CMakeFiles/NERE_2D.dir/build.make CMakeFiles/NERE_2D.dir/build
 .PHONY : NERE_2D/fast
 
+KFun.o: KFun.cpp.o
+
+.PHONY : KFun.o
+
+# target to build an object file
+KFun.cpp.o:
+	$(MAKE) -f CMakeFiles/NERE_2D.dir/build.make CMakeFiles/NERE_2D.dir/KFun.cpp.o
+.PHONY : KFun.cpp.o
+
+KFun.i: KFun.cpp.i
+
+.PHONY : KFun.i
+
+# target to preprocess a source file
+KFun.cpp.i:
+	$(MAKE) -f CMakeFiles/NERE_2D.dir/build.make CMakeFiles/NERE_2D.dir/KFun.cpp.i
+.PHONY : KFun.cpp.i
+
+KFun.s: KFun.cpp.s
+
+.PHONY : KFun.s
+
+# target to generate assembly for a file
+KFun.cpp.s:
+	$(MAKE) -f CMakeFiles/NERE_2D.dir/build.make CMakeFiles/NERE_2D.dir/KFun.cpp.s
+.PHONY : KFun.cpp.s
+
+Richards.o: Richards.cpp.o
+
+.PHONY : Richards.o
+
+# target to build an object file
+Richards.cpp.o:
+	$(MAKE) -f CMakeFiles/NERE_2D.dir/build.make CMakeFiles/NERE_2D.dir/Richards.cpp.o
+.PHONY : Richards.cpp.o
+
+Richards.i: Richards.cpp.i
+
+.PHONY : Richards.i
+
+# target to preprocess a source file
+Richards.cpp.i:
+	$(MAKE) -f CMakeFiles/NERE_2D.dir/build.make CMakeFiles/NERE_2D.dir/Richards.cpp.i
+.PHONY : Richards.cpp.i
+
+Richards.s: Richards.cpp.s
+
+.PHONY : Richards.s
+
+# target to generate assembly for a file
+Richards.cpp.s:
+	$(MAKE) -f CMakeFiles/NERE_2D.dir/build.make CMakeFiles/NERE_2D.dir/Richards.cpp.s
+.PHONY : Richards.cpp.s
+
+hysteresis.o: hysteresis.cpp.o
+
+.PHONY : hysteresis.o
+
+# target to build an object file
+hysteresis.cpp.o:
+	$(MAKE) -f CMakeFiles/NERE_2D.dir/build.make CMakeFiles/NERE_2D.dir/hysteresis.cpp.o
+.PHONY : hysteresis.cpp.o
+
+hysteresis.i: hysteresis.cpp.i
+
+.PHONY : hysteresis.i
+
+# target to preprocess a source file
+hysteresis.cpp.i:
+	$(MAKE) -f CMakeFiles/NERE_2D.dir/build.make CMakeFiles/NERE_2D.dir/hysteresis.cpp.i
+.PHONY : hysteresis.cpp.i
+
+hysteresis.s: hysteresis.cpp.s
+
+.PHONY : hysteresis.s
+
+# target to generate assembly for a file
+hysteresis.cpp.s:
+	$(MAKE) -f CMakeFiles/NERE_2D.dir/build.make CMakeFiles/NERE_2D.dir/hysteresis.cpp.s
+.PHONY : hysteresis.cpp.s
+
 main.o: main.cpp.o
 
 .PHONY : main.o
@@ -159,6 +240,15 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... NERE_2D"
+	@echo "... KFun.o"
+	@echo "... KFun.i"
+	@echo "... KFun.s"
+	@echo "... Richards.o"
+	@echo "... Richards.i"
+	@echo "... Richards.s"
+	@echo "... hysteresis.o"
+	@echo "... hysteresis.i"
+	@echo "... hysteresis.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"

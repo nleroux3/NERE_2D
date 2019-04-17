@@ -6,6 +6,20 @@
 
 #IncludeRegexTransform: 
 
+/Users/nleroux/projects/NERE_2D/KFun.h
+
+/Users/nleroux/projects/NERE_2D/Richards.h
+iostream
+-
+armadillo
+/Users/nleroux/projects/NERE_2D/armadillo
+
+/Users/nleroux/projects/NERE_2D/global.h
+
+/Users/nleroux/projects/NERE_2D/hysteresis.h
+tuple
+-
+
 /Users/nleroux/projects/NERE_2D/main.cpp
 iostream
 -
@@ -15,10 +29,18 @@ time.h
 -
 algorithm
 -
+armadillo
+/Users/nleroux/projects/NERE_2D/armadillo
 tuple
 -
 omp.h
 -
-armadillo
--
+Richards.h
+/Users/nleroux/projects/NERE_2D/Richards.h
+hysteresis.h
+/Users/nleroux/projects/NERE_2D/hysteresis.h
+KFun.h
+/Users/nleroux/projects/NERE_2D/KFun.h
+global.h
+/Users/nleroux/projects/NERE_2D/global.h
 
