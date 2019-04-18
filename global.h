@@ -3,8 +3,8 @@
 //
 #pragma once
 
-const int Nx = 50,  // Number of cells in lateral direction
-          Ny = 50;  // Number of cells in vertical direction
+const int Nx = 100,  // Number of cells in lateral direction
+          Ny = 100;  // Number of cells in vertical direction
 
 
 extern double  alpha[Ny][Nx],

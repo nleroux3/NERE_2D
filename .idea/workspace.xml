@@ -2,8 +2,8 @@
 <project version="4">
   <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
     <generated>
-      <config projectName="Dyn_2D" targetName="Dyn_2D" />
-      <config projectName="Dyn_2D" targetName="NERE_2D" />
+      <config projectName="NERE_2D" targetName="Dyn_2D" />
+      <config projectName="NERE_2D" targetName="NERE_2D" />
     </generated>
   </component>
   <component name="CMakeSettings" AUTO_RELOAD="true">
@@ -13,33 +13,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e3cca814-858c-4d63-9e4c-4fe9235b579c" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/KFun.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/KFun.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Richards.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Richards.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/global.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hysteresis.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hysteresis.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeCache.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeCache.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile2" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile2" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/NERE_2D.dir/CXX.includecache" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/NERE_2D.dir/CXX.includecache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/NERE_2D.dir/DependInfo.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/NERE_2D.dir/DependInfo.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/NERE_2D.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/NERE_2D.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/NERE_2D.dir/cmake_clean.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/NERE_2D.dir/cmake_clean.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/NERE_2D.dir/depend.internal" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/NERE_2D.dir/depend.internal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/NERE_2D.dir/depend.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/NERE_2D.dir/depend.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/NERE_2D.dir/link.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/NERE_2D.dir/link.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/NERE_2D.dir/progress.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/NERE_2D.dir/progress.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/progress.marks" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/progress.marks" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/NERE_2D" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Richards.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Richards.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Richards.h" beforeDir="false" afterPath="$PROJECT_DIR$/Richards.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/Dyn_2D.cbp" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Dyn_2D.cbp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/NERE_2D" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/NERE_2D" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/NERE_2D.dSYM/Contents/Resources/DWARF/NERE_2D" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/NERE_2D.dSYM/Contents/Resources/DWARF/NERE_2D" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/density.dat" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/density.dat" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/grain.dat" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/grain.dat" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/outflow.dat" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/outflow.dat" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/theta.dat" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/theta.dat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/global.h" beforeDir="false" afterPath="$PROJECT_DIR$/global.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/main.cpp" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
@@ -52,36 +39,14 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="DockManager">
-    <window id="1">
-      <content type="file-editors">
-        <state>
-          <leaf>
-            <file pinned="false" current-in-tab="true">
-              <entry file="file://$PROJECT_DIR$/main.cpp">
-                <provider selected="true" editor-type-id="text-editor">
-                  <state relative-caret-position="-824">
-                    <caret line="119" column="39" selection-start-line="119" selection-start-column="39" selection-end-line="119" selection-end-column="39" />
-                    <folding>
-                      <element signature="e#0#19#0" expanded="true" />
-                    </folding>
-                  </state>
-                </provider>
-              </entry>
-            </file>
-          </leaf>
-        </state>
-      </content>
-    </window>
-  </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Richards.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="287">
-              <caret line="36" column="67" selection-start-line="36" selection-start-column="67" selection-end-line="36" selection-end-column="67" />
+            <state relative-caret-position="885">
+              <caret line="59" selection-start-line="59" selection-end-line="59" />
               <folding>
                 <element signature="e#0#21#0" expanded="true" />
               </folding>
@@ -89,26 +54,13 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/KFun.cpp">
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/main.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
-              <caret line="15" lean-forward="true" selection-start-line="15" selection-end-line="15" />
+            <state relative-caret-position="175">
+              <caret line="123" column="35" selection-start-line="123" selection-start-column="35" selection-end-line="123" selection-end-column="35" />
               <folding>
-                <element signature="e#50#67#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/hysteresis.cpp">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="180">
-              <caret line="12" column="57" selection-start-line="10" selection-end-line="12" selection-end-column="57" />
-              <folding>
-                <element signature="e#50#69#0" expanded="true" />
-                <element signature="e#51#7690#0" expanded="true" />
+                <element signature="e#0#19#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -135,8 +87,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/global.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
-              <caret line="15" column="24" lean-forward="true" selection-start-line="15" selection-start-column="24" selection-end-line="15" selection-end-column="24" />
+            <state relative-caret-position="75">
+              <caret line="5" column="17" selection-start-line="5" selection-start-column="17" selection-end-line="5" selection-end-column="17" />
             </state>
           </provider>
         </entry>
@@ -144,11 +96,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Richards.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="60">
-              <caret line="4" column="12" selection-start-line="4" selection-end-line="5" />
-              <folding>
-                <element signature="e#64#83#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="90">
+              <caret line="6" selection-start-line="6" selection-end-line="6" />
             </state>
           </provider>
         </entry>
@@ -161,8 +110,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
-              <caret line="15" selection-start-line="15" selection-end-line="15" />
+            <state relative-caret-position="90">
+              <caret line="6" column="20" selection-start-line="6" selection-start-column="20" selection-end-line="6" selection-end-column="20" />
             </state>
           </provider>
         </entry>
@@ -171,7 +120,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>.coeffRef</find>
       <find>order</find>
       <find>0.5</find>
       <find>pra</find>
@@ -201,6 +149,7 @@
       <find>KFun</find>
       <find>k</find>
       <find>Ks</find>
+      <find>arma</find>
     </findStrings>
     <replaceStrings>
       <replace>double</replace>
@@ -219,12 +168,12 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/cmake-build-debug/Makefile" />
-        <option value="$PROJECT_DIR$/CMakeLists.txt" />
-        <option value="$PROJECT_DIR$/Richards.h" />
         <option value="$PROJECT_DIR$/KFun.h" />
         <option value="$PROJECT_DIR$/KFun.cpp" />
         <option value="$PROJECT_DIR$/hysteresis.cpp" />
         <option value="$PROJECT_DIR$/hysteresis.h" />
+        <option value="$PROJECT_DIR$/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/Richards.h" />
         <option value="$PROJECT_DIR$/Richards.cpp" />
         <option value="$PROJECT_DIR$/global.h" />
         <option value="$PROJECT_DIR$/main.cpp" />
@@ -232,10 +181,9 @@
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="66" />
     <option name="y" value="22" />
-    <option name="width" value="1920" />
-    <option name="height" value="1058" />
+    <option name="width" value="1440" />
+    <option name="height" value="878" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -247,8 +195,12 @@
         <subPane>
           <expand>
             <path>
-              <item name="Dyn_2D" type="b2602c69:ProjectViewProjectNode" />
+              <item name="NERE_2D" type="b2602c69:ProjectViewProjectNode" />
               <item name="NERE_2D" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="NERE_2D" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
             </path>
           </expand>
           <select />
@@ -275,12 +227,12 @@
     </option>
   </component>
   <component name="RunManager" selected="CMake Application.NERE2">
-    <configuration name="NERE2" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="Dyn_2D" RUN_TARGET_NAME="NERE_2D" EXPLICIT_BUILD_TARGET_NAME="all">
+    <configuration name="NERE2" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="NERE_2D" RUN_TARGET_NAME="NERE_2D" EXPLICIT_BUILD_TARGET_NAME="all">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="NERE_2D" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Dyn_2D" TARGET_NAME="NERE_2D" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="Dyn_2D" RUN_TARGET_NAME="NERE_2D">
+    <configuration name="NERE_2D" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="NERE_2D" TARGET_NAME="NERE_2D" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="NERE_2D" RUN_TARGET_NAME="NERE_2D">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -359,12 +311,13 @@
       <workItem from="1555363839808" duration="104000" />
       <workItem from="1555364129099" duration="427000" />
       <workItem from="1555364613248" duration="3977000" />
-      <workItem from="1555424110805" duration="19113000" />
+      <workItem from="1555424110805" duration="21424000" />
+      <workItem from="1555513580200" duration="10498000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="400620000" />
+    <option name="totallyTimeSpent" value="413429000" />
   </component>
   <component name="TodoView" selected-index="1">
     <todo-panel id="selected-file">
@@ -377,15 +330,14 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="22" width="1920" height="1058" extended-state="6" />
-    <editor active="true" />
+    <frame x="0" y="22" width="1440" height="878" extended-state="6" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49905124" visible="true" weight="0.18210863" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49905124" visible="true" weight="0.3319027" />
       <window_info id="Structure" order="1" sideWeight="0.5009488" side_tool="true" weight="0.10944206" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49840257" visible="true" weight="0.18012422" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.4978701" visible="true" weight="0.27099237" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.39648032" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -393,7 +345,7 @@
       <window_info anchor="bottom" id="Database Changes" order="7" />
       <window_info anchor="bottom" id="Messages" order="8" sideWeight="0.49946752" weight="0.2795031" />
       <window_info anchor="bottom" id="Terminal" order="9" sideWeight="0.49946752" weight="0.32919255" />
-      <window_info anchor="bottom" id="Event Log" order="10" show_stripe_button="false" sideWeight="0.50159746" side_tool="true" weight="0.18012422" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5021299" side_tool="true" weight="0.2204969" />
       <window_info anchor="bottom" id="Version Control" order="11" />
       <window_info anchor="bottom" id="CMake" order="12" sideWeight="0.49946752" weight="0.32919255" />
       <window_info anchor="bottom" id="CPU Profiler" order="13" weight="0.32919255" />
@@ -435,23 +387,57 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+    <entry file="file://$PROJECT_DIR$/KFun.cpp">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="225">
           <caret line="15" selection-start-line="15" selection-end-line="15" />
+          <folding>
+            <element signature="e#50#67#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/hysteresis.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="12" column="57" selection-start-line="10" selection-end-line="12" selection-end-column="57" />
+          <folding>
+            <element signature="e#50#69#0" expanded="true" />
+            <element signature="e#51#7690#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/LICENSE">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
+    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="90">
+          <caret line="6" column="20" selection-start-line="6" selection-start-column="20" selection-end-line="6" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Richards copy.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <folding>
+            <element signature="e#0#21#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Richards copy.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="90">
+          <caret line="6" column="8" selection-start-line="6" selection-end-line="7" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/Richards.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="4" column="12" selection-start-line="4" selection-end-line="5" />
-          <folding>
-            <element signature="e#64#83#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="90">
+          <caret line="6" selection-start-line="6" selection-end-line="6" />
         </state>
       </provider>
     </entry>
@@ -469,50 +455,36 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/hysteresis.cpp">
+    <entry file="file:///usr/local/Cellar/gcc/8.3.0/include/c++/8.3.0/iosfwd">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="12" column="57" selection-start-line="10" selection-end-line="12" selection-end-column="57" />
-          <folding>
-            <element signature="e#50#69#0" expanded="true" />
-            <element signature="e#51#7690#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="1680">
+          <caret line="118" column="10" selection-start-line="118" selection-start-column="10" selection-end-line="118" selection-end-column="10" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/global.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="15" column="24" lean-forward="true" selection-start-line="15" selection-start-column="24" selection-end-line="15" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/main.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-824">
-          <caret line="119" column="39" selection-start-line="119" selection-start-column="39" selection-end-line="119" selection-end-column="39" />
-          <folding>
-            <element signature="e#0#19#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/KFun.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="15" lean-forward="true" selection-start-line="15" selection-end-line="15" />
-          <folding>
-            <element signature="e#50#67#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="75">
+          <caret line="5" column="17" selection-start-line="5" selection-start-column="17" selection-end-line="5" selection-end-column="17" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Richards.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="287">
-          <caret line="36" column="67" selection-start-line="36" selection-start-column="67" selection-end-line="36" selection-end-column="67" />
+        <state relative-caret-position="885">
+          <caret line="59" selection-start-line="59" selection-end-line="59" />
           <folding>
             <element signature="e#0#21#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="175">
+          <caret line="123" column="35" selection-start-line="123" selection-start-column="35" selection-end-line="123" selection-end-column="35" />
+          <folding>
+            <element signature="e#0#19#0" expanded="true" />
           </folding>
         </state>
       </provider>

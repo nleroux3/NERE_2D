@@ -47,6 +47,9 @@ set(CMAKE_MAKEFILE_DEPENDS
   "CMakeFiles/3.13.4/CMakeCCompiler.cmake"
   "CMakeFiles/3.13.4/CMakeCXXCompiler.cmake"
   "CMakeFiles/3.13.4/CMakeSystem.cmake"
+  "/usr/local/share/eigen3/cmake/Eigen3Config.cmake"
+  "/usr/local/share/eigen3/cmake/Eigen3ConfigVersion.cmake"
+  "/usr/local/share/eigen3/cmake/Eigen3Targets.cmake"
   )
 
 # The corresponding makefile is:

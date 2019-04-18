@@ -1,10 +1,12 @@
 #include "Richards.h"
 #include "global.h"
+#include <Eigen/Sparse>
 
+typedef Eigen::Triplet<double> T;
 
 
 //========================= Richards equation solver  ===============================
-arma::vec Richards( double tau_0,  double lambda, double dx, double dy, double qIn, int p){
+Eigen::VectorXd Richards( double tau_0,  double lambda, double dx, double dy, double qIn, int p){
 
     double tau[Ny][Nx],
             KSouth[Ny][Nx],
@@ -13,10 +15,9 @@ arma::vec Richards( double tau_0,  double lambda, double dx, double dy, double q
             KWest[Ny][Nx];
 
 
-    arma::sp_mat Mat(Nx * Ny, Nx * Ny);
+    std::vector<T> coeffs;
 
-    arma::vec F(Ny * Nx),
-            delta_theta(Ny*Nx);
+    Eigen::VectorXd F(Ny * Nx);
 
 
     for (int j = 0; j < Ny; ++j) {
@@ -60,16 +61,15 @@ arma::vec Richards( double tau_0,  double lambda, double dx, double dy, double q
         }
     }
 
-    arma::uword k = 0;
+    int k = 0;
 
     for (int j = 0; j < Ny; ++j) {
         for (int i = 0; i < Nx;++i) {
 
             if (j == 0) { //======== BOTTOM BOUNDARY ==================================
 
-                Mat(k, k) = 1. + tau[j][i] * ((KWest[j][i] + KEast[j][i]) / pow(dx, 2.)
-                                              + KNorth[j][i] / pow(dy, 2.));  // (i,j)
-
+                coeffs.push_back(T(k,k,1. + tau[j][i] * ((KWest[j][i] + KEast[j][i]) / pow(dx, 2.)
+                                                         + KNorth[j][i] / pow(dy, 2.))));
                 if (i > 0 && i < Nx - 1) {
                     F(k) = (-KWest[j][i] * (psi[p][j][i] - psi[p][j][i - 1]) / pow(dx, 2.)
                             + KEast[j][i] * (psi[p][j][i + 1] - psi[p][j][i]) / pow(dx, 2.)
@@ -89,14 +89,14 @@ arma::vec Richards( double tau_0,  double lambda, double dx, double dy, double q
 
             } else if (j == Ny - 1) { //======== TOP BOUNDARY ==================================
 
-                Mat(k, k) = 1. + tau[j][i] * ((KWest[j][i] + KEast[j][i]) / pow(dx, 2.)
-                                              + KSouth[j][i] / pow(dy, 2.));  // (i,j)
-
+                    coeffs.push_back(T(k,k,1. + tau[j][i] * ((KWest[j][i] + KEast[j][i]) / pow(dx, 2.)
+                                             + KSouth[j][i] / pow(dy, 2.))));
                 if (i > 0 && i < Nx - 1) {
                     F(k) = (-KWest[j][i] * (psi[p][j][i] - psi[p][j][i - 1]) / pow(dx, 2.)
                             + KEast[j][i] * (psi[p][j][i + 1] - psi[p][j][i]) / pow(dx, 2.)
                             + KSouth[j][i] * (psi[p][j - 1][i] - psi[p][j][i]) / pow(dy, 2.)
                             + (qIn - KSouth[j][i]) / dy);
+
                 } else if (i == 0) {
                     F(k) = (-KWest[j][i] * (psi[p][j][i] - psi[p][j][Nx - 1]) / pow(dx, 2.)
                             + KEast[j][i] * (psi[p][j][i + 1] - psi[p][j][i]) / pow(dx, 2.)
@@ -112,9 +112,9 @@ arma::vec Richards( double tau_0,  double lambda, double dx, double dy, double q
 
             } else {
 
-                Mat(k, k) = 1. + tau[j][i] * ((KWest[j][i] + KEast[j][i]) / pow(dx, 2.)
-                                              + (KSouth[j][i] + KNorth[j][i]) / pow(dy, 2.));  // (i,j)
 
+                coeffs.push_back(T(k,k,1. + tau[j][i] * ((KWest[j][i] + KEast[j][i]) / pow(dx, 2.)
+                                              + (KSouth[j][i] + KNorth[j][i]) / pow(dy, 2.))));
                 if (i == 0) {
                     F(k) = (-KWest[j][i] * (psi[p][j][i] - psi[p][j][Nx - 1]) / pow(dx, 2.)
                             + KEast[j][i] * (psi[p][j][i + 1] - psi[p][j][i]) / pow(dx, 2.)
@@ -137,23 +137,23 @@ arma::vec Richards( double tau_0,  double lambda, double dx, double dy, double q
             }
 
             if (i > 0) {
-                Mat(k, k - 1) = -tau[j][i - 1] * KWest[j][i] / pow(dx, 2.);  // (i-1,j)
+                coeffs.push_back(T(k,k-1,-tau[j][i - 1] * KWest[j][i] / pow(dx, 2.)));
             } else {
-                Mat(k, (j + 1) * Nx - 1) = -tau[j][Nx - 1] * KWest[j][i] / pow(dx, 2.); // (i-1,j)
+                coeffs.push_back(T(k,(j + 1) * Nx - 1,-tau[j][Nx - 1] * KWest[j][i] / pow(dx, 2.)));
             }
 
             if (i < Nx - 1) {
-                Mat(k, k + 1) = -tau[j][i + 1] * KEast[j][i] / pow(dx, 2.);  // (i + 1, j);
+                coeffs.push_back(T(k,k+1,-tau[j][i + 1] * KEast[j][i] / pow(dx, 2.)));
             } else {
-                Mat(k, j * Nx) = -tau[j][0] * KEast[j][i] / pow(dx, 2.);  // (i + 1, j)
+                coeffs.push_back(T(k, j*Nx, -tau[j][0] * KEast[j][i] / pow(dx, 2.)));
             }
 
             if (j > 0) {
-                Mat(k, k - Nx) = -tau[j - 1][i] * KSouth[j][i] / pow(dy, 2.); // (i,j-1)
+                coeffs.push_back(T(k, k-Nx, -tau[j - 1][i] * KSouth[j][i] / pow(dy, 2.)));
             }
 
             if (j < Ny - 1) {
-                Mat(k, k + Nx) = -tau[j + 1][i] * KNorth[j][i] / pow(dy, 2.); // (i,j+1)
+                coeffs.push_back(T(k, k+Nx, -tau[j + 1][i] * KNorth[j][i] / pow(dy, 2.)));
             }
 
 
@@ -161,7 +161,12 @@ arma::vec Richards( double tau_0,  double lambda, double dx, double dy, double q
         }
     }
 
-    delta_theta = arma::spsolve(Mat, F, "superlu");
+
+    Eigen::SparseMatrix<double> Mat(Nx * Ny, Nx * Ny);
+    Mat.setFromTriplets(coeffs.begin(), coeffs.end());
+
+    Eigen::SimplicialCholesky<Eigen::SparseMatrix<double>> chol(Mat);  // performs a Cholesky factorization of A
+    Eigen::VectorXd delta_theta = chol.solve(F);         // use the factorization to solve for the given right hand side
 
 
     return delta_theta;

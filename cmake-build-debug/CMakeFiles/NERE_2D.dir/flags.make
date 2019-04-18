@@ -6,5 +6,5 @@ CXX_FLAGS =  -std=c++11 -fopenmp -Winline -O2 -g   -std=gnu++11
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = 
+CXX_INCLUDES = -isystem /usr/local/include/eigen3 
 

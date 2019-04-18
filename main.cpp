@@ -2,15 +2,15 @@
 #include <math.h>
 #include <time.h>
 #include <algorithm>
-#include "armadillo"
+#include <random>
 #include <tuple>
 #include <omp.h>
 #include "Richards.h"
 #include "hysteresis.h"
 #include "KFun.h"
 #include "global.h"
-
-
+#include <Eigen/Sparse>
+#include <fstream>
 
 double  alpha[Ny][Nx],
         n[Ny][Nx],
@@ -27,8 +27,8 @@ int main() {
     clock_t tStart = clock();
 
 
-    double  Lx = 0.2, // [m]
-            Ly_ini = 0.2,
+    double  Lx = 0.5, // [m]
+            Ly_ini = 0.5,
             nu = 1.7e-6,
             lambda = 0,
             tau_0 = 0.1,
@@ -119,10 +119,10 @@ int main() {
             dryRho[j][i] = dryRho_ini  * dist(mt)/100.;
             Dgrain[j][i] = Dgrain_ini  * dist(mt)/100.;
 
-//            if (y[j][i] > 0.1){
+            if (y[j][i] > 0.3){
 //                dryRho[j][i] = 417.  * dist(mt)/100.;
-//                Dgrain[j][i] = 0.406e-3  * dist(mt)/100.;
-//            }
+                Dgrain[j][i] = 0.7e-3  * dist(mt)/100.;
+            }
 
             porosity[j][i] = 1. - dryRho[j][i] / rhoI;
 
@@ -181,11 +181,11 @@ int main() {
         //==================== Compute theta_p (intermediate value) (forward Euler) =========================
 
 
-        arma::vec delta_theta_p = Richards(tau_0, lambda, dx, dy, qIn, 0);
+        Eigen::VectorXd delta_theta_p = Richards(tau_0, lambda, dx, dy, qIn, 0);
 
         again_hydrology:
 
-        arma::uword k = 0;
+        int k = 0;
 
         for (int j = 0; j < Ny; ++j) {
             for (int i = 0; i < Nx; ++i) {
@@ -195,17 +195,20 @@ int main() {
 
                 if (theta_p[j][i] > (0.9 * porosity[j][i]) ) { // If it goes above saturation, excess of water goes to the cell below (included in delta_theta)
                     dt = dt * 0.8;
-
+//                    std::cout<< 111 << std::endl;
                     goto again_hydrology;
                 }
 
-                if (theta_p[j][i] <= thetaR[j][i] and abs(theta_p[j][i] - thetaR[j][i])  >= 1e-6 ) { // If it goes above saturation, excess of water goes to the cell below (included in delta_theta
+                if (theta_p[j][i] <= thetaR[j][i]){
+                    if (abs(theta_p[j][i] - thetaR[j][i]) > 1e-10  ) {
+//                    std::cout <<  theta_p[j][i] - thetaR[j][i] << " " << 222 << std::endl;
+
                     dt = dt * 0.8;
-
                     goto again_hydrology;
+                    } else {
+                        thetaR[j][i] = theta_p[j][i] - 1e-10;
+                    }
 
-                } else if (theta_p[j][i] <= thetaR[j][i] and abs(theta_p[j][i] - thetaR[j][i])  < 1e-6 ){
-                    theta_p[j][i] = thetaR[j][i] + 1e-6;
 
                 }
 
@@ -219,15 +222,11 @@ int main() {
                 std::tie(thetaR1, std::ignore, std::ignore, std::ignore) = outputs;
 
 
-                if (theta_p[j][i] <= thetaR1 and abs(theta_p[j][i] - thetaR1)  >= 1e-6 ) { // If it goes above saturation, excess of water goes to the cell below (included in delta_theta
+                if (theta_p[j][i] <= thetaR1 ) { // If it goes above saturation, excess of water goes to the cell below (included in delta_theta
                     dt = dt * 0.8;
+//                    std::cout<< 333 << std::endl;
 
                     goto again_hydrology;
-
-                } else if (theta_p[j][i] <= thetaR1 and abs(theta_p[j][i] - thetaR1)  < 1e-6 ){
-                    theta_p[j][i] = thetaR1 + 1e-6;
-
-                    goto compute_psi;
 
                 }
 
@@ -240,7 +239,7 @@ int main() {
 
         //==================== Compute theta_new (forward Heun) =========================
 
-        arma::vec delta_theta = Richards(tau_0, lambda,dx, dy, qIn, 1);
+        Eigen::VectorXd delta_theta = Richards(tau_0, lambda,dx, dy, qIn, 1);
 
 
         k = 0;
@@ -252,8 +251,19 @@ int main() {
 
                 if (theta_new[j][i] > (0.9 * porosity[j][i])  ) { // If it goes above saturation, excess of water goes to the cell below (included in delta_theta)
                     dt = dt * 0.8;
+//                    std::cout<< 555 << std::endl;
 
                     goto again_hydrology;
+                } else if (theta_new[j][i] <= thetaR[j][i]) {
+                    if (abs(theta_new[j][i] - thetaR[j][i]) > 1e-10  ) {
+//                    std::cout << 222 << std::endl;
+
+                    dt = dt * 0.8;
+                    goto again_hydrology;
+                    } else {
+                        thetaR[j][i] = theta_new[j][i] - 1e-10;
+                    }
+
                 }
 
 
@@ -281,6 +291,7 @@ int main() {
         } else { // condition rejected
 
             dt = dt * std::max(s * sqrt(tolerance / std::max(relative_error,EPS)), r_min);
+//            std::cout<< 666 << std::endl;
 
             goto again_hydrology;
 
@@ -291,7 +302,6 @@ int main() {
         for (int j = 0; j < Ny; ++j) {
             for (int i = 0; i < Nx; ++i) {
 
-                compute_psi1:
 
                 auto outputs = hysteresis(theta[j][i], theta_new[j][i], theta_s[j][i], theta_r[j][i], 0.9 * porosity[j][i],
                                           thetaR[j][i], wrc[j][i], thetaR_dry, i, j);
@@ -300,15 +310,16 @@ int main() {
                 std::tie(thetaR_new[j][i], theta_s_new[j][i], theta_r_new[j][i], wrc_new[j][i]) = outputs;
 
 
-                if (theta_new[j][i] <= thetaR_new[j][i] and abs(theta_new[j][i] - thetaR_new[j][i]) >= 1e-6) { // If it goes above saturation, excess of water goes to the cell below (included in delta_theta)
-                    dt = dt * 0.8;
+                if (theta_new[j][i] <= thetaR_new[j][i] ) { // If it goes above saturation, excess of water goes to the cell below (included in delta_theta)
+                    if (abs(theta_new[j][i] - thetaR_new[j][i]) > 1e-10  ) {
+//                        std::cout << 222 << std::endl;
 
-                    goto again_hydrology;
+                        dt = dt * 0.8;
+                        goto again_hydrology;
+                    } else {
+                        thetaR_new[j][i] = theta_new[j][i] - 1e-10;
+                    }
 
-                } else if (theta_new[j][i] <= thetaR_new[j][i] and abs(theta_new[j][i] - thetaR_new[j][i]) < 1e-6) {
-                    theta_new[j][i] = thetaR_new[j][i] + 1e-6;
-
-                    goto compute_psi1;
                 }
 
             }
@@ -362,7 +373,7 @@ int main() {
                         density_output << dryRho[j][i] << " " ;
                     }
 
-                    outflow_output << K[0][i] << " " ;
+                    outflow_output << K[0][0][i] << " " ;
                 }
 
 

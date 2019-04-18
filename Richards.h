@@ -4,6 +4,6 @@
 
 #pragma once
 #include <iostream>
-#include "armadillo"
+#include <Eigen/Sparse>
 
-arma::vec Richards(double , double, double , double, double, int);
+Eigen::VectorXd Richards(double , double, double , double, double, int);

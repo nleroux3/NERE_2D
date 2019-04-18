@@ -217,7 +217,7 @@ CMAKE_PROJECT_DESCRIPTION:STATIC=
 CMAKE_PROJECT_HOMEPAGE_URL:STATIC=
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=Dyn_2D
+CMAKE_PROJECT_NAME:STATIC=NERE_2D
 
 //Path to a program.
 CMAKE_RANLIB:FILEPATH=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib
@@ -301,6 +301,12 @@ LAPACK_goto2_LIBRARY:FILEPATH=LAPACK_goto2_LIBRARY-NOTFOUND
 
 //Path to a library.
 LAPACK_openblas_LIBRARY:FILEPATH=LAPACK_openblas_LIBRARY-NOTFOUND
+
+//Value Computed by CMake
+NERE_2D_BINARY_DIR:STATIC=/Users/nleroux/projects/NERE_2D/cmake-build-debug
+
+//Value Computed by CMake
+NERE_2D_SOURCE_DIR:STATIC=/Users/nleroux/projects/NERE_2D
 
 //Path to a program.
 ProcessorCount_cmd_sysctl:FILEPATH=/usr/sbin/sysctl
