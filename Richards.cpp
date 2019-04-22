@@ -1,9 +1,11 @@
 #include "Richards.h"
 #include "global.h"
 #include <Eigen/Sparse>
+#include <Eigen/SparseLU>
 
 typedef Eigen::Triplet<double> T;
-
+using namespace Eigen;
+SparseLU<SparseMatrix<double>> solver;
 
 //========================= Richards equation solver  ===============================
 Eigen::VectorXd Richards( double tau_0,  double lambda, double dx, double dy, double qIn, int p){
@@ -48,6 +50,8 @@ Eigen::VectorXd Richards( double tau_0,  double lambda, double dx, double dy, do
 
             } else {
                 KWest[j][i] = 0.;
+                KWest[j][i] = pow(K[p][j][Nx - 1] * K[p][j][i], 0.5);
+
             }
 
             if (i < Nx - 1) {
@@ -56,6 +60,8 @@ Eigen::VectorXd Richards( double tau_0,  double lambda, double dx, double dy, do
 
             } else {
                 KEast[j][i] = 0.;
+                KEast[j][i] = pow(K[p][j][0] * K[p][j][i], 0.5);
+
             }
 
         }
@@ -76,6 +82,7 @@ Eigen::VectorXd Richards( double tau_0,  double lambda, double dx, double dy, do
                             - KNorth[j][i] * (psi[p][j][i] - psi[p][j + 1][i]) / pow(dy, 2.)
                             + (KNorth[j][i] - KSouth[j][i]) / dy);
                 } else if (i == 0) {
+
                     F(k) = (-KWest[j][i] * (psi[p][j][i] - psi[p][j][Nx - 1]) / pow(dx, 2.)
                             + KEast[j][i] * (psi[p][j][i + 1] - psi[p][j][i]) / pow(dx, 2.)
                             - KNorth[j][i] * (psi[p][j][i] - psi[p][j + 1][i]) / pow(dy, 2.)
@@ -165,7 +172,18 @@ Eigen::VectorXd Richards( double tau_0,  double lambda, double dx, double dy, do
     Eigen::SparseMatrix<double> Mat(Nx * Ny, Nx * Ny);
     Mat.setFromTriplets(coeffs.begin(), coeffs.end());
 
-    Eigen::SimplicialCholesky<Eigen::SparseMatrix<double>> chol(Mat);  // performs a Cholesky factorization of A
+//    Eigen::SimplicialCholesky<Eigen::SparseMatrix<double>> chol(Mat);  // performs a Cholesky factorization of A
+//    Eigen::VectorXd delta_theta = chol.solve(F);         // use the factorization to solve for the given right hand side
+
+
+//    Eigen::SimplicialLLT<Eigen::SparseMatrix<double>> chol(Mat);  // performs a Cholesky factorization of A
+//    Eigen::VectorXd delta_theta = chol.solve(F);         // use the factorization to solve for the given right hand side
+
+//    solver.analyzePattern(Mat);
+//    solver.factorize(Mat);
+//    VectorXd delta_theta = solver.solve(F);
+
+    Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> chol(Mat);  // performs a Cholesky factorization of A
     Eigen::VectorXd delta_theta = chol.solve(F);         // use the factorization to solve for the given right hand side
 
 

@@ -50,7 +50,7 @@ int main() {
             rhoI = 917., // density of ice [kg/m3]
             error = 0,
             dryRho_ini = 300.,
-            Dgrain_ini = 1e-3;
+            Dgrain_ini = 0.7e-3;
 
 
     const int tPlot = 60; // Time interval for plotting [s]
@@ -74,9 +74,9 @@ int main() {
             thetaR_new[Ny][Nx];
 
 
+
     std::random_device rd;
-    std::mt19937 mt(rd());
-    std::uniform_real_distribution<double> dist(95., 105.);
+    std::mt19937 gen(rd());
 
 
     std::ofstream theta_output;
@@ -115,13 +115,18 @@ int main() {
                 y[j][i] = (Ly_ini / double(Ny)) + y[j - 1][i];
             }
 
+            std::normal_distribution<double> r{dryRho_ini, dryRho_ini * 0.05};
+            std::normal_distribution<double> d{Dgrain_ini, Dgrain_ini * 0.05};
 
-            dryRho[j][i] = dryRho_ini  * dist(mt)/100.;
-            Dgrain[j][i] = Dgrain_ini  * dist(mt)/100.;
+
+            dryRho[j][i] = r(gen)  ;
+            Dgrain[j][i] = d(gen)  ;
 
             if (y[j][i] > 0.3){
 //                dryRho[j][i] = 417.  * dist(mt)/100.;
-                Dgrain[j][i] = 0.7e-3  * dist(mt)/100.;
+                std::normal_distribution<double> o{1e-3, 1e-3* 0.05};
+                Dgrain[j][i] = o(gen)  ;
+
             }
 
             porosity[j][i] = 1. - dryRho[j][i] / rhoI;
@@ -154,7 +159,6 @@ int main() {
             Swf[0][j][i] = Swf[1][j][i];
 
             K[0][j][i] = KFun(Ks[j][i], 0, i, j);
-
 
 
         }
@@ -194,22 +198,20 @@ int main() {
                 theta_p[j][i] = theta[j][i] + dt * delta_theta_p(k); // new theta predicted using Euler
 
                 if (theta_p[j][i] > (0.9 * porosity[j][i]) ) { // If it goes above saturation, excess of water goes to the cell below (included in delta_theta)
-                    dt = dt * 0.8;
-//                    std::cout<< 111 << std::endl;
-                    goto again_hydrology;
-                }
+
+                    std::cout << "NaN" << std::endl;
+                    return 0;
+                 }
 
                 if (theta_p[j][i] <= thetaR[j][i]){
-                    if (abs(theta_p[j][i] - thetaR[j][i]) > 1e-10  ) {
-//                    std::cout <<  theta_p[j][i] - thetaR[j][i] << " " << 222 << std::endl;
+                    if (abs(theta_p[j][i] - thetaR[j][i]) > 1e-15  ) {
 
-                    dt = dt * 0.8;
+                    dt = dt * s;
                     goto again_hydrology;
+
                     } else {
-                        thetaR[j][i] = theta_p[j][i] - 1e-10;
+                        thetaR[j][i] = theta_p[j][i] - 1e-15;
                     }
-
-
                 }
 
                 compute_psi:
@@ -223,8 +225,7 @@ int main() {
 
 
                 if (theta_p[j][i] <= thetaR1 ) { // If it goes above saturation, excess of water goes to the cell below (included in delta_theta
-                    dt = dt * 0.8;
-//                    std::cout<< 333 << std::endl;
+                    dt = dt * s;
 
                     goto again_hydrology;
 
@@ -250,18 +251,20 @@ int main() {
                 theta_new[j][i] = theta[j][i] + dt * 0.5 * (delta_theta(k) + delta_theta_p(k)) ; // new theta using Heun
 
                 if (theta_new[j][i] > (0.9 * porosity[j][i])  ) { // If it goes above saturation, excess of water goes to the cell below (included in delta_theta)
-                    dt = dt * 0.8;
-//                    std::cout<< 555 << std::endl;
 
-                    goto again_hydrology;
-                } else if (theta_new[j][i] <= thetaR[j][i]) {
-                    if (abs(theta_new[j][i] - thetaR[j][i]) > 1e-10  ) {
-//                    std::cout << 222 << std::endl;
+                    std::cout << "NaN" << std::endl;
+                    return 0;
 
-                    dt = dt * 0.8;
+                }
+
+                if (theta_new[j][i] <= thetaR[j][i]) {
+                    if (abs(theta_new[j][i] - thetaR[j][i]) > 1e-15  ) {
+
+                    dt = dt *s;
                     goto again_hydrology;
+
                     } else {
-                        thetaR[j][i] = theta_new[j][i] - 1e-10;
+                        thetaR[j][i] = theta_new[j][i] - 1e-15;
                     }
 
                 }
@@ -291,7 +294,6 @@ int main() {
         } else { // condition rejected
 
             dt = dt * std::max(s * sqrt(tolerance / std::max(relative_error,EPS)), r_min);
-//            std::cout<< 666 << std::endl;
 
             goto again_hydrology;
 
@@ -311,13 +313,12 @@ int main() {
 
 
                 if (theta_new[j][i] <= thetaR_new[j][i] ) { // If it goes above saturation, excess of water goes to the cell below (included in delta_theta)
-                    if (abs(theta_new[j][i] - thetaR_new[j][i]) > 1e-10  ) {
-//                        std::cout << 222 << std::endl;
+                    if (abs(theta_new[j][i] - thetaR_new[j][i]) > 1e-15  ) {
 
-                        dt = dt * 0.8;
+                        dt = dt * s;
                         goto again_hydrology;
                     } else {
-                        thetaR_new[j][i] = theta_new[j][i] - 1e-10;
+                        thetaR_new[j][i] = theta_new[j][i] - 1e-15;
                     }
 
                 }
