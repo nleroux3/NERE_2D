@@ -43,7 +43,7 @@ hysteresis(const double& theta_1, const double& theta_2,  double theta_s,  doubl
             wrc = 3;
             Pid = psi[0][j][i];
 
-            thetaR = theta_1 / (1. + (thetaS / thetaR_dry - 1.) * theta_1 / thetaS);
+            thetaR = std::min(theta_1 / (1. + (thetaS / thetaR_dry - 1.) * theta_1 / thetaS) , theta_2 - 1e-10);
             theta_r = thetaR;
 
             Swf[1][j][i] = 0.5 * ((theta_2 / thetaS - thetaR / thetaS) + sqrt(pow(theta_2 / thetaS - thetaR / thetaS, 2.) + 4. /
@@ -149,7 +149,7 @@ hysteresis(const double& theta_1, const double& theta_2,  double theta_s,  doubl
 
             Si_Pdi = pow(1. + pow(-alphaW[j][i] * Pdi, n[j][i]), -m);
 
-            theta_r = (theta_1 - thetaS * Si_Pdi)/(1. - Si_Pdi);
+            theta_r = std::min((theta_1 - thetaS * Si_Pdi)/(1. - Si_Pdi), theta_2 - 1e-10);
 
             psi[1][j][i] = -pow(pow((theta_2 - theta_r) / (thetaS - theta_r), -1. / m) - 1., 1. / n[j][i]) /
                   alphaW[j][i];
