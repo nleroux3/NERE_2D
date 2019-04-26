@@ -5,5 +5,5 @@
 #pragma once
 #include <iostream>
 #include <Eigen/Sparse>
-
-Eigen::VectorXd Richards(double , double, double , double, double, int);
+#include<Eigen/IterativeLinearSolvers>
+Eigen::VectorXd Richards( const double& tau_0,  const double& lambda, const double& dx, const double& dy, const double& qIn, const int& p);
