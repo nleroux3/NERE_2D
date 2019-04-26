@@ -32,7 +32,7 @@ Eigen::VectorXd Richards( const double& tau_0,  const double& lambda, const doub
 
 
             if (j > 0) {
-                KSouth[j][i] = pow(K[p][j - 1][i] * K[p][j][i], 0.5);
+                KSouth[j][i] = sqrt(K[p][j - 1][i] * K[p][j][i]);
 //                KSouth[j][i] = (K[j - 1][i] + K[j][i])  * 0.5;
 
             } else {
@@ -40,7 +40,7 @@ Eigen::VectorXd Richards( const double& tau_0,  const double& lambda, const doub
             }
 
             if (j < Ny - 1) {
-                KNorth[j][i] = pow(K[p][j + 1][i] * K[p][j][i], 0.5);
+                KNorth[j][i] = sqrt(K[p][j + 1][i] * K[p][j][i]);
 //                KNorth[j][i] = (K[j + 1][i] + K[j][i]) * 0.5;
 
             } else {
@@ -48,22 +48,22 @@ Eigen::VectorXd Richards( const double& tau_0,  const double& lambda, const doub
             }
 
             if (i > 0) {
-                KWest[j][i] = pow(K[p][j][i - 1] * K[p][j][i], 0.5);
+                KWest[j][i] = sqrt(K[p][j][i - 1] * K[p][j][i]);
 //                KWest[j][i] = (K[j][i - 1] + K[j][i]) * 0.5;
 
             } else {
                 KWest[j][i] = 0.;
-                KWest[j][i] = pow(K[p][j][Nx - 1] * K[p][j][i], 0.5);
+                KWest[j][i] = sqrt(K[p][j][Nx - 1] * K[p][j][i]);
 
             }
 
             if (i < Nx - 1) {
-                KEast[j][i] = pow(K[p][j][i + 1] * K[p][j][i], 0.5);
+                KEast[j][i] = sqrt(K[p][j][i + 1] * K[p][j][i]);
 //                KEast[j][i] = (K[j][i + 1] + K[j][i]) * 0.5;
 
             } else {
                 KEast[j][i] = 0.;
-                KEast[j][i] = pow(K[p][j][0] * K[p][j][i], 0.5);
+                KEast[j][i] = sqrt(K[p][j][0] * K[p][j][i]);
 
             }
 
