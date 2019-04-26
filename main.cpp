@@ -31,7 +31,7 @@ int main() {
             Ly_ini = 0.5,
             nu = 1.7e-6,
             lambda = 0,
-            tau_0 = 0.1,
+            tau_0 = 0.5,
             gamma = 2.,
             tf = 3600. ,
             thetaR_dry = 0.02,
@@ -41,7 +41,7 @@ int main() {
             tolerance = 0.01, // relative truncation error tolerances
             r_min = 0.1,
             EPS = 1e-10,
-            s = 0.6,
+            s = 0.8,
             dt_new,
             relative_error,
             dt_ini = 0.1,
@@ -50,7 +50,7 @@ int main() {
             rhoI = 917., // density of ice [kg/m3]
             error = 0,
             dryRho_ini = 300.,
-            Dgrain_ini = 0.7e-3;
+            Dgrain_ini = 1e-3;
 
 
     const int tPlot = 60; // Time interval for plotting [s]
@@ -122,12 +122,11 @@ int main() {
             dryRho[j][i] = r(gen)  ;
             Dgrain[j][i] = d(gen)  ;
 
-            if (y[j][i] > 0.3){
-//                dryRho[j][i] = 417.  * dist(mt)/100.;
-                std::normal_distribution<double> o{1e-3, 1e-3* 0.05};
-                Dgrain[j][i] = o(gen)  ;
-
-            }
+//            if (y[j][i] > 0.3){
+//                std::normal_distribution<double> o{0.5e-3, 0.5e-3* 0.05};
+//                Dgrain[j][i] = o(gen)  ;
+//
+//            }
 
             porosity[j][i] = 1. - dryRho[j][i] / rhoI;
 
@@ -204,17 +203,16 @@ int main() {
                  }
 
                 if (theta_p[j][i] <= thetaR[j][i]){
-                    if (abs(theta_p[j][i] - thetaR[j][i]) > 1e-15  ) {
+                    if (abs(theta_p[j][i] - thetaR[j][i]) > 1e-10  ) {
 
                     dt = dt * s;
                     goto again_hydrology;
 
                     } else {
-                        thetaR[j][i] = theta_p[j][i] - 1e-15;
+                        thetaR[j][i] = theta_p[j][i] - 1e-10;
                     }
                 }
 
-                compute_psi:
 
                 auto outputs = hysteresis(theta[j][i], theta_p[j][i], theta_s[j][i], theta_r[j][i], 0.9 * porosity[j][i],
                                           thetaR[j][i], wrc[j][i], thetaR_dry, i, j);
@@ -258,13 +256,13 @@ int main() {
                 }
 
                 if (theta_new[j][i] <= thetaR[j][i]) {
-                    if (abs(theta_new[j][i] - thetaR[j][i]) > 1e-15  ) {
+                    if (abs(theta_new[j][i] - thetaR[j][i]) > 1e-10  ) {
 
                     dt = dt *s;
                     goto again_hydrology;
 
                     } else {
-                        thetaR[j][i] = theta_new[j][i] - 1e-15;
+                        thetaR[j][i] = theta_new[j][i] - 1e-10;
                     }
 
                 }
@@ -313,12 +311,12 @@ int main() {
 
 
                 if (theta_new[j][i] <= thetaR_new[j][i] ) { // If it goes above saturation, excess of water goes to the cell below (included in delta_theta)
-                    if (abs(theta_new[j][i] - thetaR_new[j][i]) > 1e-15  ) {
+                    if (abs(theta_new[j][i] - thetaR_new[j][i]) > 1e-10  ) {
 
                         dt = dt * s;
                         goto again_hydrology;
                     } else {
-                        thetaR_new[j][i] = theta_new[j][i] - 1e-15;
+                        thetaR_new[j][i] = theta_new[j][i] - 1e-10;
                     }
 
                 }
