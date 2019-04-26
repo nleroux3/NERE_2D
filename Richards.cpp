@@ -5,10 +5,13 @@
 
 typedef Eigen::Triplet<double> T;
 using namespace Eigen;
-SparseLU<SparseMatrix<double>> solver;
+
+
+
 
 //========================= Richards equation solver  ===============================
-Eigen::VectorXd Richards( double tau_0,  double lambda, double dx, double dy, double qIn, int p){
+Eigen::VectorXd Richards( const double& tau_0,  const double& lambda, const double& dx, const double& dy, const double& qIn, const int& p)
+{
 
     double tau[Ny][Nx],
             KSouth[Ny][Nx],
@@ -74,7 +77,7 @@ Eigen::VectorXd Richards( double tau_0,  double lambda, double dx, double dy, do
 
             if (j == 0) { //======== BOTTOM BOUNDARY ==================================
 
-                coeffs.push_back(T(k,k,1. + tau[j][i] * ((KWest[j][i] + KEast[j][i]) / pow(dx, 2.)
+                coeffs.emplace_back(T(k,k,1. + tau[j][i] * ((KWest[j][i] + KEast[j][i]) / pow(dx, 2.)
                                                          + KNorth[j][i] / pow(dy, 2.))));
                 if (i > 0 && i < Nx - 1) {
                     F(k) = (-KWest[j][i] * (psi[p][j][i] - psi[p][j][i - 1]) / pow(dx, 2.)
@@ -96,7 +99,7 @@ Eigen::VectorXd Richards( double tau_0,  double lambda, double dx, double dy, do
 
             } else if (j == Ny - 1) { //======== TOP BOUNDARY ==================================
 
-                    coeffs.push_back(T(k,k,1. + tau[j][i] * ((KWest[j][i] + KEast[j][i]) / pow(dx, 2.)
+                    coeffs.emplace_back(T(k,k,1. + tau[j][i] * ((KWest[j][i] + KEast[j][i]) / pow(dx, 2.)
                                              + KSouth[j][i] / pow(dy, 2.))));
                 if (i > 0 && i < Nx - 1) {
                     F(k) = (-KWest[j][i] * (psi[p][j][i] - psi[p][j][i - 1]) / pow(dx, 2.)
@@ -120,7 +123,7 @@ Eigen::VectorXd Richards( double tau_0,  double lambda, double dx, double dy, do
             } else {
 
 
-                coeffs.push_back(T(k,k,1. + tau[j][i] * ((KWest[j][i] + KEast[j][i]) / pow(dx, 2.)
+                coeffs.emplace_back(T(k,k,1. + tau[j][i] * ((KWest[j][i] + KEast[j][i]) / pow(dx, 2.)
                                               + (KSouth[j][i] + KNorth[j][i]) / pow(dy, 2.))));
                 if (i == 0) {
                     F(k) = (-KWest[j][i] * (psi[p][j][i] - psi[p][j][Nx - 1]) / pow(dx, 2.)
@@ -144,23 +147,23 @@ Eigen::VectorXd Richards( double tau_0,  double lambda, double dx, double dy, do
             }
 
             if (i > 0) {
-                coeffs.push_back(T(k,k-1,-tau[j][i - 1] * KWest[j][i] / pow(dx, 2.)));
+                coeffs.emplace_back(T(k,k-1,-tau[j][i - 1] * KWest[j][i] / pow(dx, 2.)));
             } else {
-                coeffs.push_back(T(k,(j + 1) * Nx - 1,-tau[j][Nx - 1] * KWest[j][i] / pow(dx, 2.)));
+                coeffs.emplace_back(T(k,(j + 1) * Nx - 1,-tau[j][Nx - 1] * KWest[j][i] / pow(dx, 2.)));
             }
 
             if (i < Nx - 1) {
-                coeffs.push_back(T(k,k+1,-tau[j][i + 1] * KEast[j][i] / pow(dx, 2.)));
+                coeffs.emplace_back(T(k,k+1,-tau[j][i + 1] * KEast[j][i] / pow(dx, 2.)));
             } else {
-                coeffs.push_back(T(k, j*Nx, -tau[j][0] * KEast[j][i] / pow(dx, 2.)));
+                coeffs.emplace_back(T(k, j*Nx, -tau[j][0] * KEast[j][i] / pow(dx, 2.)));
             }
 
             if (j > 0) {
-                coeffs.push_back(T(k, k-Nx, -tau[j - 1][i] * KSouth[j][i] / pow(dy, 2.)));
+                coeffs.emplace_back(T(k, k-Nx, -tau[j - 1][i] * KSouth[j][i] / pow(dy, 2.)));
             }
 
             if (j < Ny - 1) {
-                coeffs.push_back(T(k, k+Nx, -tau[j + 1][i] * KNorth[j][i] / pow(dy, 2.)));
+                coeffs.emplace_back(T(k, k+Nx, -tau[j + 1][i] * KNorth[j][i] / pow(dy, 2.)));
             }
 
 

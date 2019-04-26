@@ -33,7 +33,7 @@ int main() {
             lambda = 0,
             tau_0 = 0.1,
             gamma = 2.,
-            tf = 3600. ,
+            tf = 100., //3600. ,
             thetaR_dry = 0.02,
             qIn = 10e-3/3600.  ,  // Input flux [m/s]
             epsilon = 1e-6,
@@ -76,7 +76,7 @@ int main() {
 
 
     std::random_device rd;
-    std::mt19937 gen(rd());
+    std::mt19937 gen(5489u);
 
 
     std::ofstream theta_output;
@@ -191,6 +191,7 @@ int main() {
 
         int k = 0;
 
+
         for (int j = 0; j < Ny; ++j) {
             for (int i = 0; i < Nx; ++i) {
 
@@ -214,8 +215,8 @@ int main() {
                     }
                 }
 
-                compute_psi:
 
+                //this looks like it operates only one a single cell so this whole loop can be done in parallel
                 auto outputs = hysteresis(theta[j][i], theta_p[j][i], theta_s[j][i], theta_r[j][i], 0.9 * porosity[j][i],
                                           thetaR[j][i], wrc[j][i], thetaR_dry, i, j);
 

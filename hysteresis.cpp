@@ -9,8 +9,8 @@
 
 //========================= SIMPLE HYSTERESIS ===============================
 std::tuple<double, double, double, int>
-hysteresis(double theta_1, double theta_2, double theta_s, double theta_r, double thetaS, double thetaR,
-            int wrc_ini, double thetaR_dry, int i, int j) {
+hysteresis(const double& theta_1, const double& theta_2,  double theta_s,  double theta_r, const double& thetaS,  double thetaR,
+           const int& wrc_ini, const double& thetaR_dry, const int& i, const int& j) {
 
     double  m,
             Sd_Pid,
