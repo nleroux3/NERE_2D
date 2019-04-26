@@ -12,7 +12,7 @@ double KFun( double Ks, int p, int i, int j) {
 
     m = 1. - 1. / n[j][i];
 
-    K = Ks * pow(Swf[p][j][i], 0.5) * pow(1. - pow(1. - pow(Swf[p][j][i], 1. / m), m), 2);
+    K = Ks * sqrt(Swf[p][j][i]) * pow(1. - pow(1. - pow(Swf[p][j][i], 1. / m), m), 2);
 
     return K;
 }
