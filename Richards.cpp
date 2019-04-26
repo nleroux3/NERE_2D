@@ -186,11 +186,26 @@ Eigen::VectorXd Richards( const double& tau_0,  const double& lambda, const doub
 //    solver.factorize(Mat);
 //    VectorXd delta_theta = solver.solve(F);
 
-    Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> chol(Mat);  // performs a Cholesky factorization of A
-    Eigen::VectorXd delta_theta = chol.solve(F);         // use the factorization to solve for the given right hand side
+//    Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> chol(Mat);  // performs a Cholesky factorization of A
+//    if(chol.info() == Eigen::NumericalIssue)
+//    {
+//      throw std::runtime_error("Possibly non semi-positive definitie matrix!");
+//    }
+//  Eigen::VectorXd delta_theta = chol.solve(F);         // use the factorization to solve for the given right hand side
 
 
-    return delta_theta;
+
+//  Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> chol(Mat);  // performs a Cholesky factorization of A
+//  if(!Mat.isApprox(Mat.transpose()) || chol.info() == Eigen::NumericalIssue)
+//  {
+//    throw std::runtime_error("Possibly non semi-positive definitie matrix!");
+//  }
+
+  Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cg;
+  cg.compute(Mat);
+
+  Eigen::VectorXd delta_theta = cg.solve(F);
+  return delta_theta;
 
 }
 
