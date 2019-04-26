@@ -31,9 +31,9 @@ int main() {
             Ly_ini = 0.5,
             nu = 1.7e-6,
             lambda = 0,
-            tau_0 = 0.5,
+            tau_0 = 0.1,
             gamma = 2.,
-            tf = 100., //3600. ,
+            tf = 3600. ,
             thetaR_dry = 0.02,
             qIn = 10e-3/3600.  ,  // Input flux [m/s]
             epsilon = 1e-6,
@@ -41,7 +41,7 @@ int main() {
             tolerance = 0.01, // relative truncation error tolerances
             r_min = 0.1,
             EPS = 1e-10,
-            s = 0.8,
+            s = 0.6,
             dt_new,
             relative_error,
             dt_ini = 0.1,
@@ -76,7 +76,8 @@ int main() {
 
 
     std::random_device rd;
-    std::mt19937 gen(5489u);
+//    std::mt19937 gen(5489u);
+    std::mt19937 gen{rd()};
 
 
     std::ofstream theta_output;
@@ -188,114 +189,124 @@ int main() {
 
         again_hydrology:
 
-        int k = 0;
+        int NotConverged = 1; // Condition for convergence of the first and second order solutions of Heun's method
+
+        while (NotConverged) {
+
+            int k = 0;
 
 
-        for (int j = 0; j < Ny; ++j) {
-            for (int i = 0; i < Nx; ++i) {
+            for (int j = 0; j < Ny; ++j) {
+                for (int i = 0; i < Nx; ++i) {
 
 
-                theta_p[j][i] = theta[j][i] + dt * delta_theta_p(k); // new theta predicted using Euler
+                    theta_p[j][i] = theta[j][i] + dt * delta_theta_p(k); // new theta predicted using Euler
 
-                if (theta_p[j][i] > (0.9 * porosity[j][i]) ) { // If it goes above saturation, excess of water goes to the cell below (included in delta_theta)
+                    if (theta_p[j][i] > (0.9 * porosity[j][i])) { // If it goes above saturation, excess of water goes to the cell below (included in delta_theta)
 
-                    std::cout << "NaN" << std::endl;
-                    return 0;
-                 }
-
-                if (theta_p[j][i] <= thetaR[j][i]){
-                    if (abs(theta_p[j][i] - thetaR[j][i]) > 1e-10  ) {
-
-                    dt = dt * s;
-                    goto again_hydrology;
-
-                    } else {
-                        thetaR[j][i] = theta_p[j][i] - 1e-10;
-                    }
-                }
-
-
-                //this looks like it operates only one a single cell so this whole loop can be done in parallel
-                auto outputs = hysteresis(theta[j][i], theta_p[j][i], theta_s[j][i], theta_r[j][i], 0.9 * porosity[j][i],
-                                          thetaR[j][i], wrc[j][i], thetaR_dry, i, j);
-
-                double thetaR1;
-
-                std::tie(thetaR1, std::ignore, std::ignore, std::ignore) = outputs;
-
-
-                if (theta_p[j][i] <= thetaR1 ) { // If it goes above saturation, excess of water goes to the cell below (included in delta_theta
-                    dt = dt * s;
-
-                    goto again_hydrology;
-
-                }
-
-                K[1][j][i]  =  KFun(Ks[j][i], 1, i, j);
-
-                k += 1;
-
-            }
-        }
-
-        //==================== Compute theta_new (forward Heun) =========================
-
-        Eigen::VectorXd delta_theta = Richards(tau_0, lambda,dx, dy, qIn, 1);
-
-
-        k = 0;
-
-        for (int j = 0; j < Ny; ++j) {
-            for (int i = 0; i < Nx; ++i) {
-
-                theta_new[j][i] = theta[j][i] + dt * 0.5 * (delta_theta(k) + delta_theta_p(k)) ; // new theta using Heun
-
-                if (theta_new[j][i] > (0.9 * porosity[j][i])  ) { // If it goes above saturation, excess of water goes to the cell below (included in delta_theta)
-
-                    std::cout << "NaN" << std::endl;
-                    return 0;
-
-                }
-
-                if (theta_new[j][i] <= thetaR[j][i]) {
-                    if (abs(theta_new[j][i] - thetaR[j][i]) > 1e-10  ) {
-
-                    dt = dt *s;
-                    goto again_hydrology;
-
-                    } else {
-                        thetaR[j][i] = theta_new[j][i] - 1e-10;
+                        std::cout << "NaN" << std::endl;
+                        return 0;
                     }
 
+                    if (theta_p[j][i] <= thetaR[j][i]) {
+                        if (abs(theta_p[j][i] - thetaR[j][i]) > 1e-10) {
+
+                            dt = dt * s;
+                            goto again_hydrology;
+
+                        } else {
+                            thetaR[j][i] = theta_p[j][i] - 1e-10;
+                        }
+                    }
+
+
+                    //this looks like it operates only one a single cell so this whole loop can be done in parallel
+                    auto outputs = hysteresis(theta[j][i], theta_p[j][i], theta_s[j][i], theta_r[j][i],
+                                              0.9 * porosity[j][i],
+                                              thetaR[j][i], wrc[j][i], thetaR_dry, i, j);
+
+                    double thetaR1;
+
+                    std::tie(thetaR1, std::ignore, std::ignore, std::ignore) = outputs;
+
+
+                    if (theta_p[j][i] <=
+                        thetaR1) { // If it goes above saturation, excess of water goes to the cell below (included in delta_theta
+                        dt = dt * s;
+
+                        goto again_hydrology;
+
+                    }
+
+                    K[1][j][i] = KFun(Ks[j][i], 1, i, j);
+
+                    k += 1;
+
                 }
-
-
-                //==================== Calculate error  =========================
-                error = abs(theta_p[j][i] - theta_new[j][i]) / theta_new[j][i];
-
-
-                if (k == 0) {
-                    relative_error = error;
-                } else {
-                    relative_error = std::max(relative_error, error);
-                }
-
-                k += 1;
             }
-        }
 
-        //==================== Compare relative error and tolerance =========================
+            //==================== Compute theta_new (forward Heun) =========================
+
+            Eigen::VectorXd delta_theta = Richards(tau_0, lambda, dx, dy, qIn, 1);
 
 
-        if (relative_error <= tolerance) { // time step accepted
+            k = 0;
 
-            dt_new = std::min(dt * s * sqrt(tolerance / std::max(relative_error,EPS)), dt_ini);
+            for (int j = 0; j < Ny; ++j) {
+                for (int i = 0; i < Nx; ++i) {
 
-        } else { // condition rejected
+                    theta_new[j][i] =
+                            theta[j][i] + dt * 0.5 * (delta_theta(k) + delta_theta_p(k)); // new theta using Heun
 
-            dt = dt * std::max(s * sqrt(tolerance / std::max(relative_error,EPS)), r_min);
+                    if (theta_new[j][i] > (0.9 *
+                                           porosity[j][i])) { // If it goes above saturation, excess of water goes to the cell below (included in delta_theta)
 
-            goto again_hydrology;
+                        std::cout << "NaN" << std::endl;
+                        return 0;
+
+                    }
+
+                    if (theta_new[j][i] <= thetaR[j][i]) {
+                        if (abs(theta_new[j][i] - thetaR[j][i]) > 1e-10) {
+
+                            dt = dt * s;
+                            goto again_hydrology;
+
+                        } else {
+                            thetaR[j][i] = theta_new[j][i] - 1e-10;
+                        }
+
+                    }
+
+
+                    //==================== Calculate error  =========================
+                    error = abs(theta_p[j][i] - theta_new[j][i]) / theta_new[j][i];
+
+
+                    if (k == 0) {
+                        relative_error = error;
+                    } else {
+                        relative_error = std::max(relative_error, error);
+                    }
+
+                    k += 1;
+                }
+            }
+
+            //==================== Compare relative error and tolerance =========================
+
+
+            if (relative_error <= tolerance) { // time step accepted
+
+                dt_new = std::min(dt * s * sqrt(tolerance / std::max(relative_error, EPS)), dt_ini);
+
+                NotConverged = 0;
+
+            } else { // condition rejected
+
+                dt = dt * std::max(s * sqrt(tolerance / std::max(relative_error, EPS)), r_min);
+
+            }
 
         }
 
@@ -312,7 +323,7 @@ int main() {
                 std::tie(thetaR_new[j][i], theta_s_new[j][i], theta_r_new[j][i], wrc_new[j][i]) = outputs;
 
 
-                if (theta_new[j][i] <= thetaR_new[j][i] ) { // If it goes above saturation, excess of water goes to the cell below (included in delta_theta)
+                if (theta_new[j][i] <= thetaR_new[j][i] ) {
                     if (abs(theta_new[j][i] - thetaR_new[j][i]) > 1e-10  ) {
 
                         dt = dt * s;

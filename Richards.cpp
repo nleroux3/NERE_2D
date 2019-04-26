@@ -52,7 +52,7 @@ Eigen::VectorXd Richards( const double& tau_0,  const double& lambda, const doub
 //                KWest[j][i] = (K[j][i - 1] + K[j][i]) * 0.5;
 
             } else {
-                KWest[j][i] = 0.;
+//                KWest[j][i] = 0.;
                 KWest[j][i] = sqrt(K[p][j][Nx - 1] * K[p][j][i]);
 
             }
@@ -62,7 +62,7 @@ Eigen::VectorXd Richards( const double& tau_0,  const double& lambda, const doub
 //                KEast[j][i] = (K[j][i + 1] + K[j][i]) * 0.5;
 
             } else {
-                KEast[j][i] = 0.;
+//                KEast[j][i] = 0.;
                 KEast[j][i] = sqrt(K[p][j][0] * K[p][j][i]);
 
             }
