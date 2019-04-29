@@ -96,7 +96,12 @@ int main() {
     double dx =  Lx / double(Nx);
     double dy =  Ly_ini / double(Ny);
 
+    double a = -7.3e-4 * qIn * 1e3 * 3600.  + 0.63, // parameters for the parametric equation relating tau and gamma
+           b = 3.5e-3 * qIn * 1e3 * 3600.   - 3.08,
+           c = -4.6e-3 * qIn * 1e3 * 3600.  + 4.1;
 
+    double p = 535.3, // parameters for the parametric equation relating gamma and grain size
+           q = 1.43;
 
     for (int j = 0; j < Ny; ++j) {
         for (int i = 0; i < Nx; ++i) {
@@ -127,9 +132,9 @@ int main() {
 //
 //            }
 
-            gamma[j][i] = 2.;
+            gamma[j][i] = p * Dgrain[j][i] + q;
 
-            tau[j][i] = 0.1;
+            tau[j][i] = a * pow(gamma[j][i], 2.) + b * gamma[j][i] + c;
 
             porosity[j][i] = 1. - dryRho[j][i] / rhoI;
 
