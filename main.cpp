@@ -73,8 +73,8 @@ int main() {
 
     std::random_device rd;
 //    std::mt19937 gen(5489u);
-//    std::mt19937 gen{1};
-    std::mt19937 gen{rd()};
+    std::mt19937 gen{1};
+//    std::mt19937 gen{rd()};
 
 
     std::ofstream theta_output;
@@ -121,7 +121,7 @@ int main() {
             Dgrain[j][i] = d(gen)  ;
 
             if (y[j][i] > 0.1){
-                std::normal_distribution<double> o{1.463e-3, 1.463e-3* 0.05};
+                std::normal_distribution<double> o{1.463e-3, 1.463e-3 * 0.05};
                 Dgrain[j][i] = o(gen)  ;
                 std::normal_distribution<double> q{472., 472. * 0.05};
                 dryRho[j][i] = q(gen)  ;
@@ -184,6 +184,7 @@ int main() {
         //==================== Compute theta_p (intermediate value) (forward Euler) =========================
 
 
+
         Eigen::VectorXd delta_theta_p = Richards(tau_0, lambda, dx, dy, qIn, 0);
 
 
@@ -200,14 +201,13 @@ int main() {
 
                     theta_p[j][i] = theta[j][i] + dt * delta_theta_p(k); // new theta predicted using Euler
 
-                    if (theta_p[j][i] > (0.9 * porosity[j][i])) { // If it goes above saturation, excess of water goes to the cell below (included in delta_theta)
+                    if (theta_p[j][i] > (0.9 * porosity[j][i]) || isnan(theta_p[j][i])) { // If it goes above saturation, stop model
 
                         std::cout << "NaN" << std::endl;
                         return 0;
                     }
 
 
-                    //this looks like it operates only one a single cell so this whole loop can be done in parallel
                     auto outputs = hysteresis(theta[j][i], theta_p[j][i], theta_s[j][i], theta_r[j][i],
                                               0.9 * porosity[j][i],
                                               thetaR[j][i], wrc[j][i], thetaR_dry, i, j);
@@ -233,9 +233,9 @@ int main() {
                     theta_new[j][i] =
                             theta[j][i] + dt * 0.5 * (delta_theta(k) + delta_theta_p(k)); // new theta using Heun
 
-                    if (theta_new[j][i] > (0.9 * porosity[j][i])) { // If it goes above saturation, excess of water goes to the cell below (included in delta_theta)
+                    if (theta_new[j][i] > (0.9 * porosity[j][i]) || isnan(theta_new[j][i])) { // If it goes above saturation, stop model
 
-                        std::cout << "NaN" << std::endl;
+                        std::cout << "NaN " << theta_new[j][i] << std::endl;
                         return 0;
 
                     }
@@ -265,13 +265,13 @@ int main() {
 
                 NotConverged = false;
 
-            } else { // condition rejected
+            } else { // condition rejected, still in while loop
 
                 dt = dt * std::max(s * sqrt(tolerance / std::max(relative_error, EPS)), r_min);
 
             }
 
-        }
+        } // end while loop
 
         //==================== Calculate psi_new =========================
 

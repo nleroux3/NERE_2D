@@ -43,7 +43,7 @@ hysteresis(const double& theta_1, const double& theta_2,  double theta_s,  doubl
             wrc = 3;
             Pid = psi[0][j][i];
 
-            thetaR = std::min(theta_1 / (1. + (thetaS / thetaR_dry - 1.) * theta_1 / thetaS) , theta_2 - 1e-10);
+            thetaR = std::min(theta_1 / (1. + (thetaS / thetaR_dry - 1.) * theta_1 / thetaS) , theta_2 - 1e-10);  // To avoid model divergence for small fluctuations of theta_2
             theta_r = thetaR;
 
             Swf[1][j][i] = 0.5 * ((theta_2 / thetaS - thetaR / thetaS) + sqrt(pow(theta_2 / thetaS - thetaR / thetaS, 2.) + 4. /
@@ -65,6 +65,9 @@ hysteresis(const double& theta_1, const double& theta_2,  double theta_s,  doubl
     if (wrc_ini == 3) { // On drying scanning curve
 
         wrc = 3;
+
+
+        thetaR = std::min(thetaR, theta_2 - 1e-10); // To avoid model divergence for small fluctuations of theta_2
 
         psi[1][j][i] = -pow(pow((theta_2 - thetaR) / (theta_s - thetaR), -1. / m) - 1., 1 / n[j][i]) /
               alpha[j][i];
