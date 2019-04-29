@@ -19,7 +19,8 @@ double  alpha[Ny][Nx],
         psi[2][Ny][Nx],
         K[2][Ny][Nx],
         alphaW[Ny][Nx],
-        Swf[2][Ny][Nx];
+        Swf[2][Ny][Nx],
+        tau[Ny][Nx];
 
 
 int main() {
@@ -27,15 +28,12 @@ int main() {
     clock_t tStart = clock();
 
 
-    double  Lx = 0.05, // [m]
-            Ly_ini = 0.2,
+    double  Lx = 0.5, // [m]
+            Ly_ini = 0.5,
             nu = 1.7e-6,
-            lambda = 0,
-            tau_0 = 0.05,
-            gamma = 2.,
-            tf = 3000. ,
+            tf = 3600. ,
             thetaR_dry = 0.02,
-            qIn = 11e-3/3600.  ,  // Input flux [m/s]
+            qIn = 10e-3/3600.  ,  // Input flux [m/s]
             epsilon = 1e-6,
             time = 0.,
             tolerance = 0.01, // relative truncation error tolerances
@@ -49,8 +47,8 @@ int main() {
             dt,
             rhoI = 917., // density of ice [kg/m3]
             error = 0,
-            dryRho_ini = 487.,
-            Dgrain_ini = 2.926e-3;
+            dryRho_ini = 300,
+            Dgrain_ini = 1e-3;
 
 
     const int tPlot = 60; // Time interval for plotting [s]
@@ -67,14 +65,15 @@ int main() {
             theta_s[Ny][Nx],
             theta_r[Ny][Nx],
             theta_p[Ny][Nx],
-            theta_new[Ny][Nx]; // predicted theta^(n+1) from Euler
+            theta_new[Ny][Nx], // predicted theta^(n+1) from Euler
+            gamma[Ny][Nx];
 
 
 
     std::random_device rd;
 //    std::mt19937 gen(5489u);
-    std::mt19937 gen{1};
-//    std::mt19937 gen{rd()};
+//    std::mt19937 gen{1};
+    std::mt19937 gen{rd()};
 
 
     std::ofstream theta_output;
@@ -113,20 +112,24 @@ int main() {
                 y[j][i] = (Ly_ini / double(Ny)) + y[j - 1][i];
             }
 
-            std::normal_distribution<double> r{dryRho_ini, dryRho_ini * 0.05};
-            std::normal_distribution<double> d{Dgrain_ini, Dgrain_ini * 0.05};
+            std::normal_distribution<double> r{dryRho_ini, dryRho_ini * 0.1};
+            std::normal_distribution<double> d{Dgrain_ini, Dgrain_ini * 0.1};
 
 
             dryRho[j][i] = r(gen)  ;
             Dgrain[j][i] = d(gen)  ;
 
-            if (y[j][i] > 0.1){
-                std::normal_distribution<double> o{1.463e-3, 1.463e-3 * 0.05};
-                Dgrain[j][i] = o(gen)  ;
-                std::normal_distribution<double> q{472., 472. * 0.05};
-                dryRho[j][i] = q(gen)  ;
+//            if (y[j][i] > 0.1){
+//                std::normal_distribution<double> o{1.463e-3, 1.463e-3 * 0.1};
+//                Dgrain[j][i] = o(gen)  ;
+//                std::normal_distribution<double> q{472., 472. * 0.1};
+//                dryRho[j][i] = q(gen)  ;
+//
+//            }
 
-            }
+            gamma[j][i] = 2.;
+
+            tau[j][i] = 0.1;
 
             porosity[j][i] = 1. - dryRho[j][i] / rhoI;
 
@@ -134,7 +137,7 @@ int main() {
 
             alpha[j][i] = 4.4e6 * pow(dryRho[j][i] / Dgrain[j][i], -0.98);
 
-            alphaW[j][i] = gamma * alpha[j][i];
+            alphaW[j][i] = gamma[j][i] * alpha[j][i];
 
             n[j][i] = 1. + 2.7e-3 * pow(dryRho[j][i] / Dgrain[j][i], 0.61);
 
@@ -185,7 +188,7 @@ int main() {
 
 
 
-        Eigen::VectorXd delta_theta_p = Richards(tau_0, lambda, dx, dy, qIn, 0);
+        Eigen::VectorXd delta_theta_p = Richards(dx, dy, qIn, 0);
 
 
         bool NotConverged = true; // Condition for convergence of the first and second order solutions of Heun's method
@@ -222,7 +225,7 @@ int main() {
 
             //==================== Compute theta_new (forward Heun) =========================
 
-            Eigen::VectorXd delta_theta = Richards(tau_0, lambda, dx, dy, qIn, 1);
+            Eigen::VectorXd delta_theta = Richards(dx, dy, qIn, 1);
 
 
             k = 0;

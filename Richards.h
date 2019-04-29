@@ -6,4 +6,5 @@
 #include <iostream>
 #include <Eigen/Sparse>
 #include<Eigen/IterativeLinearSolvers>
-Eigen::VectorXd Richards( const double& tau_0,  const double& lambda, const double& dx, const double& dy, const double& qIn, const int& p);
+
+Eigen::VectorXd Richards(const double& dx, const double& dy, const double& qIn, const int& p);

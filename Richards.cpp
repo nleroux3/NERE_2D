@@ -10,11 +10,10 @@ using namespace Eigen;
 
 
 //========================= Richards equation solver  ===============================
-Eigen::VectorXd Richards( const double& tau_0,  const double& lambda, const double& dx, const double& dy, const double& qIn, const int& p)
+Eigen::VectorXd Richards(const double& dx, const double& dy, const double& qIn, const int& p)
 {
 
-    double tau[Ny][Nx],
-            KSouth[Ny][Nx],
+    double  KSouth[Ny][Nx],
             KNorth[Ny][Nx],
             KEast[Ny][Nx],
             KWest[Ny][Nx];
@@ -27,8 +26,6 @@ Eigen::VectorXd Richards( const double& tau_0,  const double& lambda, const doub
 
     for (int j = 0; j < Ny; ++j) {
         for (int i = 0; i < Nx; ++i) {
-
-            tau[j][i] = tau_0 * pow(Swf[p][j][i], -lambda);
 
 
             if (j > 0) {
