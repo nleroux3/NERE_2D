@@ -27,15 +27,15 @@ int main() {
     clock_t tStart = clock();
 
 
-    double  Lx = 0.5, // [m]
-            Ly_ini = 0.5,
+    double  Lx = 0.05, // [m]
+            Ly_ini = 0.2,
             nu = 1.7e-6,
             lambda = 0,
-            tau_0 = 0.1,
+            tau_0 = 0.05,
             gamma = 2.,
-            tf = 3600. ,
+            tf = 3000. ,
             thetaR_dry = 0.02,
-            qIn = 10e-3/3600.  ,  // Input flux [m/s]
+            qIn = 11e-3/3600.  ,  // Input flux [m/s]
             epsilon = 1e-6,
             time = 0.,
             tolerance = 0.01, // relative truncation error tolerances
@@ -49,15 +49,14 @@ int main() {
             dt,
             rhoI = 917., // density of ice [kg/m3]
             error = 0,
-            dryRho_ini = 300.,
-            Dgrain_ini = 1e-3;
+            dryRho_ini = 487.,
+            Dgrain_ini = 2.926e-3;
 
 
     const int tPlot = 60; // Time interval for plotting [s]
 
 
-    int     wrc[Ny][Nx],
-            wrc_new[Ny][Nx]; //  0 : initial condition is T, 1: initial condition is theta
+    int     wrc[Ny][Nx]; //  0 : initial condition is T, 1: initial condition is theta
 
     double  x[Ny][Nx],
             y[Ny][Nx],
@@ -67,16 +66,14 @@ int main() {
             thetaR[Ny][Nx],
             theta_s[Ny][Nx],
             theta_r[Ny][Nx],
-            theta_s_new[Ny][Nx],
-            theta_r_new[Ny][Nx],
             theta_p[Ny][Nx],
-            theta_new[Ny][Nx], // predicted theta^(n+1) from Euler
-            thetaR_new[Ny][Nx];
+            theta_new[Ny][Nx]; // predicted theta^(n+1) from Euler
 
 
 
     std::random_device rd;
 //    std::mt19937 gen(5489u);
+//    std::mt19937 gen{1};
     std::mt19937 gen{rd()};
 
 
@@ -123,11 +120,13 @@ int main() {
             dryRho[j][i] = r(gen)  ;
             Dgrain[j][i] = d(gen)  ;
 
-//            if (y[j][i] > 0.3){
-//                std::normal_distribution<double> o{0.5e-3, 0.5e-3* 0.05};
-//                Dgrain[j][i] = o(gen)  ;
-//
-//            }
+            if (y[j][i] > 0.1){
+                std::normal_distribution<double> o{1.463e-3, 1.463e-3* 0.05};
+                Dgrain[j][i] = o(gen)  ;
+                std::normal_distribution<double> q{472., 472. * 0.05};
+                dryRho[j][i] = q(gen)  ;
+
+            }
 
             porosity[j][i] = 1. - dryRho[j][i] / rhoI;
 
@@ -188,7 +187,7 @@ int main() {
         Eigen::VectorXd delta_theta_p = Richards(tau_0, lambda, dx, dy, qIn, 0);
 
 
-        int NotConverged = 1; // Condition for convergence of the first and second order solutions of Heun's method
+        bool NotConverged = true; // Condition for convergence of the first and second order solutions of Heun's method
 
         while (NotConverged) {
 
@@ -264,7 +263,7 @@ int main() {
 
                 dt_new = std::min(dt * s * sqrt(tolerance / std::max(relative_error, EPS)), dt_ini);
 
-                NotConverged = 0;
+                NotConverged = false;
 
             } else { // condition rejected
 
@@ -284,34 +283,19 @@ int main() {
                                           thetaR[j][i], wrc[j][i], thetaR_dry, i, j);
 
 
-                std::tie(thetaR_new[j][i], theta_s_new[j][i], theta_r_new[j][i], wrc_new[j][i]) = outputs;
+                std::tie(thetaR[j][i], theta_s[j][i], theta_r[j][i], wrc[j][i]) = outputs;
 
-
-            }
-        }
-
-
-
-        for (int j = 0; j < Ny; ++j) {
-            for (int i = 0; i < Nx; ++i) {
-
-                theta[j][i] = theta_new[j][i];
-
-                thetaR[j][i] = thetaR_new[j][i];
 
                 psi[0][j][i] = psi[1][j][i];
-
+                theta[j][i] = theta_new[j][i];
                 Swf[0][j][i] = Swf[1][j][i];
-
-                wrc[j][i] = wrc_new[j][i];
-
-                theta_s[j][i] = theta_s_new[j][i];
-
-                theta_r[j][i] = theta_r_new[j][i];
-
                 K[0][j][i]  =  KFun(Ks[j][i], 0, i, j);
+
+
             }
         }
+
+
 
 
         //=================================================================================
