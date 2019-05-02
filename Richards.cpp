@@ -23,7 +23,6 @@ Eigen::VectorXd Richards(const double& dx, const double& dy, const double& qIn, 
 
     Eigen::VectorXd F(Ny * Nx);
 
-
     for (int j = 0; j < Ny; ++j) {
         for (int i = 0; i < Nx; ++i) {
 
@@ -49,8 +48,8 @@ Eigen::VectorXd Richards(const double& dx, const double& dy, const double& qIn, 
 //                KWest[j][i] = (K[j][i - 1] + K[j][i]) * 0.5;
 
             } else {
-                KWest[j][i] = 0.;
-//                KWest[j][i] = sqrt(K[p][j][Nx - 1] * K[p][j][i]);
+//                KWest[j][i] = 0.;
+                KWest[j][i] = sqrt(K[p][j][Nx - 1] * K[p][j][i]); // Periodic boundary condition
 
             }
 
@@ -59,8 +58,8 @@ Eigen::VectorXd Richards(const double& dx, const double& dy, const double& qIn, 
 //                KEast[j][i] = (K[j][i + 1] + K[j][i]) * 0.5;
 
             } else {
-                KEast[j][i] = 0.;
-//                KEast[j][i] = sqrt(K[p][j][0] * K[p][j][i]);
+//                KEast[j][i] = 0.;
+                KEast[j][i] = sqrt(K[p][j][0] * K[p][j][i]); // Periodic boundary condition
 
             }
 

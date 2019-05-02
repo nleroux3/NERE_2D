@@ -4,4 +4,4 @@
 
 #pragma once
 
-double KFun(double , int, int, int);
+double KFun(const double& Ks, const int& p, const int& i, const int& j);

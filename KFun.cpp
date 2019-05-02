@@ -5,7 +5,7 @@
 #include "global.h"
 #include <math.h>
 
-double KFun( double Ks, int p, int i, int j) {
+double KFun(const double& Ks, const int& p, const int& i, const int& j) {
 
     double K,
            m;

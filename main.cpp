@@ -80,7 +80,6 @@ int main() {
 
     theta_output.open("theta.dat");
 
-
     std::ofstream grain_output;
 
     grain_output.open("grain.dat");
@@ -96,12 +95,6 @@ int main() {
     double dx =  Lx / double(Nx);
     double dy =  Ly_ini / double(Ny);
 
-    double a = -7.3e-4 * qIn * 1e3 * 3600.  + 0.63, // parameters for the parametric equation relating tau and gamma
-           b = 3.5e-3 * qIn * 1e3 * 3600.   - 3.08,
-           c = -4.6e-3 * qIn * 1e3 * 3600.  + 4.1;
-
-    double p = 535.3, // parameters for the parametric equation relating gamma and grain size
-           q = 1.43;
 
     for (int j = 0; j < Ny; ++j) {
         for (int i = 0; i < Nx; ++i) {
@@ -117,24 +110,24 @@ int main() {
                 y[j][i] = (Ly_ini / double(Ny)) + y[j - 1][i];
             }
 
-            std::normal_distribution<double> r{dryRho_ini, dryRho_ini * 0.1};
-            std::normal_distribution<double> d{Dgrain_ini, Dgrain_ini * 0.1};
-
+            std::normal_distribution<double> r{dryRho_ini, dryRho_ini * 0.05};
+            std::normal_distribution<double> d{Dgrain_ini, Dgrain_ini * 0.05};
 
             dryRho[j][i] = r(gen)  ;
             Dgrain[j][i] = d(gen)  ;
 
-//            if (y[j][i] > 0.1){
-//                std::normal_distribution<double> o{1.463e-3, 1.463e-3 * 0.1};
-//                Dgrain[j][i] = o(gen)  ;
-//                std::normal_distribution<double> q{472., 472. * 0.1};
-//                dryRho[j][i] = q(gen)  ;
-//
-//            }
+            if (y[j][i] > 0.3){
+                std::normal_distribution<double> o{0.5e-3, 0.5e-3 * 0.05};
+                Dgrain[j][i] = o(gen)  ;
+            }
 
-            gamma[j][i] = p * Dgrain[j][i] + q;
+            gamma[j][i] = 2;
 
-            tau[j][i] = a * pow(gamma[j][i], 2.) + b * gamma[j][i] + c;
+//            double permeability = 3. * pow(Dgrain[j][i] * 0.5, 2.) * exp(-0.013 * dryRho[j][i]);
+
+//            tau[j][i] = std::max(1.36 - 0.44 * gamma[j][i] - 1.1e-3 * qIn*3600*1e3 - 1.2e7 * permeability + 2e-4 * gamma[j][i]*qIn*3600*1e3 + 2.5e7 * gamma[j][i]*permeability, 0.);
+
+            tau[j][i] = 0.05;
 
             porosity[j][i] = 1. - dryRho[j][i] / rhoI;
 
@@ -167,18 +160,14 @@ int main() {
 
             K[0][j][i] = KFun(Ks[j][i], 0, i, j);
 
-
         }
     }
-
-
-    dt = dt_ini;
 
     // =================================================================================================
     // ============================ Main loop through time =============================================
     // =================================================================================================
 
-
+    dt = dt_ini;
 
     while (time < tf) {
 
@@ -190,11 +179,7 @@ int main() {
 
 
         //==================== Compute theta_p (intermediate value) (forward Euler) =========================
-
-
-
         Eigen::VectorXd delta_theta_p = Richards(dx, dy, qIn, 0);
-
 
         bool NotConverged = true; // Condition for convergence of the first and second order solutions of Heun's method
 
@@ -202,19 +187,16 @@ int main() {
 
             int k = 0;
 
-
             for (int j = 0; j < Ny; ++j) {
                 for (int i = 0; i < Nx; ++i) {
-
 
                     theta_p[j][i] = theta[j][i] + dt * delta_theta_p(k); // new theta predicted using Euler
 
                     if (theta_p[j][i] > (0.9 * porosity[j][i]) || isnan(theta_p[j][i])) { // If it goes above saturation, stop model
 
-                        std::cout << "NaN" << std::endl;
+                        std::cout << "NaN" << theta_p[j][i] << std::endl;
                         return 0;
                     }
-
 
                     auto outputs = hysteresis(theta[j][i], theta_p[j][i], theta_s[j][i], theta_r[j][i],
                                               0.9 * porosity[j][i],
@@ -242,17 +224,13 @@ int main() {
                             theta[j][i] + dt * 0.5 * (delta_theta(k) + delta_theta_p(k)); // new theta using Heun
 
                     if (theta_new[j][i] > (0.9 * porosity[j][i]) || isnan(theta_new[j][i])) { // If it goes above saturation, stop model
-
                         std::cout << "NaN " << theta_new[j][i] << std::endl;
                         return 0;
-
                     }
-
 
 
                     //==================== Calculate error  =========================
                     error = abs(theta_p[j][i] - theta_new[j][i]) / theta_new[j][i];
-
 
                     if (k == 0) {
                         relative_error = error;
@@ -265,8 +243,6 @@ int main() {
             }
 
             //==================== Compare relative error and tolerance =========================
-
-
             if (relative_error <= tolerance) { // time step accepted
 
                 dt_new = std::min(dt * s * sqrt(tolerance / std::max(relative_error, EPS)), dt_ini);
@@ -279,13 +255,12 @@ int main() {
 
             }
 
-        } // end while loop
+        } // end while convergence loop
 
         //==================== Calculate psi_new =========================
 
         for (int j = 0; j < Ny; ++j) {
             for (int i = 0; i < Nx; ++i) {
-
 
                 auto outputs = hysteresis(theta[j][i], theta_new[j][i], theta_s[j][i], theta_r[j][i], 0.9 * porosity[j][i],
                                           thetaR[j][i], wrc[j][i], thetaR_dry, i, j);
@@ -293,18 +268,13 @@ int main() {
 
                 std::tie(thetaR[j][i], theta_s[j][i], theta_r[j][i], wrc[j][i]) = outputs;
 
-
                 psi[0][j][i] = psi[1][j][i];
                 theta[j][i] = theta_new[j][i];
                 Swf[0][j][i] = Swf[1][j][i];
                 K[0][j][i]  =  KFun(Ks[j][i], 0, i, j);
 
-
             }
         }
-
-
-
 
         //=================================================================================
         //================================ Update time  ===================================
@@ -313,9 +283,8 @@ int main() {
         time = time + dt;
 
         //=================================================================================
-        //================ Compute mass balance and write output files  ===================
+        //==============================  write output files  =============================
         //=================================================================================
-
 
         if (time > 0 && int(time) % tPlot == 0) {
             if (int(time-dt) != int(time) ) {
@@ -345,10 +314,7 @@ int main() {
 
         }
 
-
-
         dt = dt_new;
-
 
     } // end of time loop
 
