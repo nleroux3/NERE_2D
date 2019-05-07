@@ -256,7 +256,7 @@ int main() {
                         relative_error = std::max(relative_error, error);
                     }
 
-                    k += 1;
+                    k -= 1;
                 }
             }
 
