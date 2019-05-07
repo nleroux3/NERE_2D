@@ -36,7 +36,7 @@ int main() {
             qIn = 10e-3/3600.  ,  // Input flux [m/s]
             epsilon = 1e-6,
             time = 0.,
-            tolerance = 0.01, // relative truncation error tolerances
+            tolerance = 0.05, // relative truncation error tolerances
             r_min = 0.1,
             EPS = 1e-10,
             s = 0.6,
@@ -75,6 +75,9 @@ int main() {
 //    std::mt19937 gen{1};
     std::mt19937 gen{rd()};
 
+    std::ofstream tau_output;
+
+    tau_output.open("tau.dat");
 
     std::ofstream theta_output;
 
@@ -115,19 +118,21 @@ int main() {
 
             dryRho[j][i] = r(gen)  ;
             Dgrain[j][i] = d(gen)  ;
+//            dryRho[j][i] = dryRho_ini  ;
+//            Dgrain[j][i] = Dgrain_ini  ;
 
-            if (y[j][i] > 0.3){
-                std::normal_distribution<double> o{0.5e-3, 0.5e-3 * 0.05};
-                Dgrain[j][i] = o(gen)  ;
-            }
+//            if (y[j][i] > 0.3) {
+//                std::normal_distribution<double> o{0.5e-3, 0.5e-3 * 0.02};
+//                Dgrain[j][i] = o(gen)  ;
+//            }
 
-            gamma[j][i] = 2;
+            double permeability = 3. * pow(Dgrain[j][i] * 0.5, 2.) * exp(-0.013 * dryRho[j][i]);
 
-//            double permeability = 3. * pow(Dgrain[j][i] * 0.5, 2.) * exp(-0.013 * dryRho[j][i]);
+            gamma[j][i] = 2.;
 
-//            tau[j][i] = std::max(1.36 - 0.44 * gamma[j][i] - 1.1e-3 * qIn*3600*1e3 - 1.2e7 * permeability + 2e-4 * gamma[j][i]*qIn*3600*1e3 + 2.5e7 * gamma[j][i]*permeability, 0.);
+            tau[j][i] = 0.92 - 0.079 * gamma[j][i] - 1.9e-3 * qIn*3600*1e3 + 3e8 * permeability + 4.3e-4 * gamma[j][i] * qIn*3600*1e3 - 1.5e8 * gamma[j][i] * permeability  ;
 
-            tau[j][i] = 0.05;
+            tau_output << tau[j][i] << " " ;
 
             porosity[j][i] = 1. - dryRho[j][i] / rhoI;
 
@@ -163,14 +168,15 @@ int main() {
         }
     }
 
+    tau_output.close();
+
     // =================================================================================================
     // ============================ Main loop through time =============================================
     // =================================================================================================
 
     dt = dt_ini;
 
-    while (time < tf) {
-
+    while (time <  tf) {
 
 
         //=================================================================================
@@ -185,17 +191,23 @@ int main() {
 
         while (NotConverged) {
 
-            int k = 0;
+            int k = Nx*Ny - 1;
 
-            for (int j = 0; j < Ny; ++j) {
-                for (int i = 0; i < Nx; ++i) {
+            for (int j = Ny-1; j >= 0; --j) {
+                for (int i = Nx-1; i >= 0; --i) {
 
                     theta_p[j][i] = theta[j][i] + dt * delta_theta_p(k); // new theta predicted using Euler
 
-                    if (theta_p[j][i] > (0.9 * porosity[j][i]) || isnan(theta_p[j][i])) { // If it goes above saturation, stop model
+//                    if (theta_p[j][i] > (0.9 * porosity[j][i]) || isnan(theta_p[j][i])) { // If it goes above saturation, stop model
+//
+//                        std::cout << "NaN" << theta_p[j][i] << std::endl;
+//                        return 0;
+//                    }
+                    if (theta_p[j][i] > (0.9 * porosity[j][i] - epsilon) and j > 0) { // If it goes above saturation, stop model
 
-                        std::cout << "NaN" << theta_p[j][i] << std::endl;
-                        return 0;
+                        theta_p[j-1][i] = theta_p[j][i] - (0.9 * porosity[j][i] - epsilon);
+                        theta_p[j][i] = (0.9 * porosity[j][i] - epsilon);
+
                     }
 
                     auto outputs = hysteresis(theta[j][i], theta_p[j][i], theta_s[j][i], theta_r[j][i],
@@ -205,7 +217,7 @@ int main() {
 
                     K[1][j][i] = KFun(Ks[j][i], 1, i, j);
 
-                    k += 1;
+                    k -= 1;
 
                 }
             }
@@ -215,19 +227,25 @@ int main() {
             Eigen::VectorXd delta_theta = Richards(dx, dy, qIn, 1);
 
 
-            k = 0;
+            k = Nx*Ny - 1;
 
-            for (int j = 0; j < Ny; ++j) {
-                for (int i = 0; i < Nx; ++i) {
+            for (int j = Ny-1; j >= 0; --j) {
+                for (int i = Nx-1; i >= 0; --i) {
 
                     theta_new[j][i] =
                             theta[j][i] + dt * 0.5 * (delta_theta(k) + delta_theta_p(k)); // new theta using Heun
 
-                    if (theta_new[j][i] > (0.9 * porosity[j][i]) || isnan(theta_new[j][i])) { // If it goes above saturation, stop model
-                        std::cout << "NaN " << theta_new[j][i] << std::endl;
-                        return 0;
-                    }
+//                    if (theta_new[j][i] > (0.9 * porosity[j][i]) || isnan(theta_new[j][i])) { // If it goes above saturation, stop model
+//                        std::cout << "NaN " << theta_new[j][i] << std::endl;
+//                        return 0;
+//                    }
 
+                    if (theta_new[j][i] > (0.9 * porosity[j][i] - epsilon) and j > 0) { // If it goes above saturation, stop model
+
+                        theta_new[j-1][i] = theta_new[j][i] - (0.9 * porosity[j][i] - epsilon);
+                        theta_new[j][i] = (0.9 * porosity[j][i] - epsilon);
+
+                    }
 
                     //==================== Calculate error  =========================
                     error = abs(theta_p[j][i] - theta_new[j][i]) / theta_new[j][i];
@@ -302,9 +320,6 @@ int main() {
                     outflow_output << K[0][0][i] << " " ;
                 }
 
-
-
-                density_output << std::endl;
 
                 theta_output << std::endl;
                 grain_output << std::endl;
