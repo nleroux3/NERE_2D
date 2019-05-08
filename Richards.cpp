@@ -8,7 +8,6 @@ using namespace Eigen;
 
 
 
-
 //========================= Richards equation solver  ===============================
 Eigen::VectorXd Richards(const double& dx, const double& dy, const double& qIn, const int& p)
 {
@@ -76,17 +75,21 @@ Eigen::VectorXd Richards(const double& dx, const double& dy, const double& qIn, 
                 coeffs.emplace_back(T(k,k,1. + tau[j][i] * ((KWest[j][i] + KEast[j][i]) / pow(dx, 2.)
                                                          + KNorth[j][i] / pow(dy, 2.))));
                 if (i > 0 && i < Nx - 1) {
+
                     F(k) = (-KWest[j][i] * (psi[p][j][i] - psi[p][j][i - 1]) / pow(dx, 2.)
                             + KEast[j][i] * (psi[p][j][i + 1] - psi[p][j][i]) / pow(dx, 2.)
                             - KNorth[j][i] * (psi[p][j][i] - psi[p][j + 1][i]) / pow(dy, 2.)
                             + (KNorth[j][i] - KSouth[j][i]) / dy);
+
                 } else if (i == 0) {
 
                     F(k) = (-KWest[j][i] * (psi[p][j][i] - psi[p][j][Nx - 1]) / pow(dx, 2.)
                             + KEast[j][i] * (psi[p][j][i + 1] - psi[p][j][i]) / pow(dx, 2.)
                             - KNorth[j][i] * (psi[p][j][i] - psi[p][j + 1][i]) / pow(dy, 2.)
                             + (KNorth[j][i] - KSouth[j][i]) / dy);
+
                 } else if (i == Nx - 1) {
+
                     F(k) = (-KWest[j][i] * (psi[p][j][i] - psi[p][j][i - 1]) / pow(dx, 2.)
                             + KEast[j][i] * (psi[p][j][0] - psi[p][j][i]) / pow(dx, 2.)
                             - KNorth[j][i] * (psi[p][j][i] - psi[p][j + 1][i]) / pow(dy, 2.)
@@ -97,24 +100,28 @@ Eigen::VectorXd Richards(const double& dx, const double& dy, const double& qIn, 
 
                     coeffs.emplace_back(T(k,k,1. + tau[j][i] * ((KWest[j][i] + KEast[j][i]) / pow(dx, 2.)
                                              + KSouth[j][i] / pow(dy, 2.))));
+
                 if (i > 0 && i < Nx - 1) {
+
                     F(k) = (-KWest[j][i] * (psi[p][j][i] - psi[p][j][i - 1]) / pow(dx, 2.)
                             + KEast[j][i] * (psi[p][j][i + 1] - psi[p][j][i]) / pow(dx, 2.)
                             + KSouth[j][i] * (psi[p][j - 1][i] - psi[p][j][i]) / pow(dy, 2.)
                             + (qIn - KSouth[j][i]) / dy);
 
                 } else if (i == 0) {
+
                     F(k) = (-KWest[j][i] * (psi[p][j][i] - psi[p][j][Nx - 1]) / pow(dx, 2.)
                             + KEast[j][i] * (psi[p][j][i + 1] - psi[p][j][i]) / pow(dx, 2.)
                             + KSouth[j][i] * (psi[p][j - 1][i] - psi[p][j][i]) / pow(dy, 2.)
                             + (qIn - KSouth[j][i]) / dy);
+
                 } else if (i == Nx - 1) {
+
                     F(k) = (-KWest[j][i] * (psi[p][j][i] - psi[p][j][i - 1]) / pow(dx, 2.)
                             + KEast[j][i] * (psi[p][j][0] - psi[p][j][i]) / pow(dx, 2.)
                             + KSouth[j][i] * (psi[p][j - 1][i] - psi[p][j][i]) / pow(dy, 2.)
                             + (qIn - KSouth[j][i]) / dy);
                 }
-
 
             } else {
 
@@ -122,18 +129,23 @@ Eigen::VectorXd Richards(const double& dx, const double& dy, const double& qIn, 
                 coeffs.emplace_back(T(k,k,1. + tau[j][i] * ((KWest[j][i] + KEast[j][i]) / pow(dx, 2.)
                                               + (KSouth[j][i] + KNorth[j][i]) / pow(dy, 2.))));
                 if (i == 0) {
+
                     F(k) = (-KWest[j][i] * (psi[p][j][i] - psi[p][j][Nx - 1]) / pow(dx, 2.)
                             + KEast[j][i] * (psi[p][j][i + 1] - psi[p][j][i]) / pow(dx, 2.)
                             - KNorth[j][i] * (psi[p][j][i] - psi[p][j + 1][i]) / pow(dy, 2.)
                             + KSouth[j][i] * (psi[p][j - 1][i] - psi[p][j][i]) / pow(dy, 2.)
                             + (KNorth[j][i] - KSouth[j][i]) / dy);
+
                 } else if (i == Nx - 1) {
-                    F(k) = (-KWest[j][i] * (psi[p][j][i] - psi[p][j][Nx - 1]) / pow(dx, 2.)
+
+                    F(k) = (-KWest[j][i] * (psi[p][j][i] - psi[p][j][i - 1]) / pow(dx, 2.)
                             + KEast[j][i] * (psi[p][j][0] - psi[p][j][i]) / pow(dx, 2.)
                             - KNorth[j][i] * (psi[p][j][i] - psi[p][j + 1][i]) / pow(dy, 2.)
                             + KSouth[j][i] * (psi[p][j - 1][i] - psi[p][j][i]) / pow(dy, 2.)
                             + (KNorth[j][i] - KSouth[j][i]) / dy);
+
                 } else {
+
                     F(k) = (-KWest[j][i] * (psi[p][j][i] - psi[p][j][i - 1]) / pow(dx, 2.)
                             + KEast[j][i] * (psi[p][j][i + 1] - psi[p][j][i]) / pow(dx, 2.)
                             - KNorth[j][i] * (psi[p][j][i] - psi[p][j + 1][i]) / pow(dy, 2.)
@@ -167,35 +179,9 @@ Eigen::VectorXd Richards(const double& dx, const double& dy, const double& qIn, 
         }
     }
 
-
     Eigen::SparseMatrix<double> Mat(Nx * Ny, Nx * Ny);
     Mat.setFromTriplets(coeffs.begin(), coeffs.end());
 
-//    Eigen::SimplicialCholesky<Eigen::SparseMatrix<double>> chol(Mat);  // performs a Cholesky factorization of A
-//    Eigen::VectorXd delta_theta = chol.solve(F);         // use the factorization to solve for the given right hand side
-
-
-//    Eigen::SimplicialLLT<Eigen::SparseMatrix<double>> chol(Mat);  // performs a Cholesky factorization of A
-//    Eigen::VectorXd delta_theta = chol.solve(F);         // use the factorization to solve for the given right hand side
-
-//    solver.analyzePattern(Mat);
-//    solver.factorize(Mat);
-//    VectorXd delta_theta = solver.solve(F);
-
-//    Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> chol(Mat);  // performs a Cholesky factorization of A
-//    if(chol.info() == Eigen::NumericalIssue)
-//    {
-//      throw std::runtime_error("Possibly non semi-positive definitie matrix!");
-//    }
-//  Eigen::VectorXd delta_theta = chol.solve(F);         // use the factorization to solve for the given right hand side
-
-
-
-//  Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> chol(Mat);  // performs a Cholesky factorization of A
-//  if(!Mat.isApprox(Mat.transpose()) || chol.info() == Eigen::NumericalIssue)
-//  {
-//    throw std::runtime_error("Possibly non semi-positive definitie matrix!");
-//  }
 
   Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cg;
   cg.compute(Mat);
