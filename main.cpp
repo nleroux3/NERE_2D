@@ -188,6 +188,7 @@ int main() {
 
             Keff[j][i] = 1e-9;
 
+            melt_layer[i] = dy; // depth of the melting layer (used in Richards, changes if Hn > 0)
         }
     }
 
@@ -244,9 +245,8 @@ int main() {
 
         while (NotConverged) {
 
-        //==================== Compute theta_p (intermediate value) (forward Euler) =========================
-        Eigen::VectorXd delta_theta_p = Richards(dx, dy, 0, M);
-
+            //==================== Compute theta_p (intermediate value) (forward Euler) =========================
+            Eigen::VectorXd delta_theta_p = Richards(dx, dy, 0, M, melt_layer);
 
 
             int k = Nx*M - 1;
@@ -277,7 +277,8 @@ int main() {
 
             //==================== Compute theta_new (forward Heun) =========================
 
-            Eigen::VectorXd delta_theta = Richards(dx, dy, 1, M);
+
+            Eigen::VectorXd delta_theta = Richards(dx, dy, 1, M, melt_layer);
 
 
             k = Nx*M - 1;

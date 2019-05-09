@@ -9,7 +9,7 @@ using namespace Eigen;
 
 
 //========================= Richards equation solver  ===============================
-Eigen::VectorXd Richards(const double& dx, const double& dy, const int& p, const int& M)
+Eigen::VectorXd Richards(const double& dx, const double& dy, const int& p, const int& M, double dy_top[Nx])
 {
 
     double  KSouth[M][Nx],
@@ -99,27 +99,27 @@ Eigen::VectorXd Richards(const double& dx, const double& dy, const int& p, const
             } else if (j == Ny - 1) { //======== TOP BOUNDARY ==================================
 
                     coeffs.emplace_back(Tr(k,k,1. + tau[j][i] * ((KWest[j][i] + KEast[j][i]) / pow(dx, 2.)
-                                             + KSouth[j][i] / pow(dy, 2.))));
+                                             + KSouth[j][i] / pow(dy_top[i], 2.))));
 
                 if (i > 0 && i < Nx - 1) {
 
                     F(k) = (-KWest[j][i] * (psi[p][j][i] - psi[p][j][i - 1]) / pow(dx, 2.)
                             + KEast[j][i] * (psi[p][j][i + 1] - psi[p][j][i]) / pow(dx, 2.)
-                            + KSouth[j][i] * (psi[p][j - 1][i] - psi[p][j][i]) / pow(dy, 2.)
+                            + KSouth[j][i] * (psi[p][j - 1][i] - psi[p][j][i]) / pow(dy_top[i], 2.)
                             + (qIn[i] - KSouth[j][i]) / dy);
 
                 } else if (i == 0) {
 
                     F(k) = (-KWest[j][i] * (psi[p][j][i] - psi[p][j][Nx - 1]) / pow(dx, 2.)
                             + KEast[j][i] * (psi[p][j][i + 1] - psi[p][j][i]) / pow(dx, 2.)
-                            + KSouth[j][i] * (psi[p][j - 1][i] - psi[p][j][i]) / pow(dy, 2.)
+                            + KSouth[j][i] * (psi[p][j - 1][i] - psi[p][j][i]) / pow(dy_top[i], 2.)
                             + (qIn[i] - KSouth[j][i]) / dy);
 
                 } else if (i == Nx - 1) {
 
                     F(k) = (-KWest[j][i] * (psi[p][j][i] - psi[p][j][i - 1]) / pow(dx, 2.)
                             + KEast[j][i] * (psi[p][j][0] - psi[p][j][i]) / pow(dx, 2.)
-                            + KSouth[j][i] * (psi[p][j - 1][i] - psi[p][j][i]) / pow(dy, 2.)
+                            + KSouth[j][i] * (psi[p][j - 1][i] - psi[p][j][i]) / pow(dy_top[i], 2.)
                             + (qIn[i] - KSouth[j][i]) / dy);
                 }
 
