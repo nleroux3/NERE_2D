@@ -182,14 +182,14 @@ int main() {
         //=================================================================================
         //============================== Full step hydrology ==============================
         //=================================================================================
+        bool NotConverged = true; // Condition for convergence of the first and second order solutions of Heun's method
 
+        while (NotConverged) {
 
         //==================== Compute theta_p (intermediate value) (forward Euler) =========================
         Eigen::VectorXd delta_theta_p = Richards(dx, dy, qIn, 0);
 
-        bool NotConverged = true; // Condition for convergence of the first and second order solutions of Heun's method
 
-        while (NotConverged) {
 
             int k = Nx*Ny - 1;
 
@@ -198,17 +198,12 @@ int main() {
 
                     theta_p[j][i] = theta[j][i] + dt * delta_theta_p(k); // new theta predicted using Euler
 
-//                    if (theta_p[j][i] > (0.9 * porosity[j][i]) || isnan(theta_p[j][i])) { // If it goes above saturation, stop model
-//
-//                        std::cout << "NaN" << theta_p[j][i] << std::endl;
-//                        return 0;
-//                    }
-                    if (theta_p[j][i] > (0.9 * porosity[j][i] - epsilon) and j > 0) { // If it goes above saturation, stop model
-
-                        theta_p[j-1][i] = theta_p[j][i] - (0.9 * porosity[j][i] - epsilon);
-                        theta_p[j][i] = (0.9 * porosity[j][i] - epsilon);
-
+                    if (theta_p[j][i] > (0.9 * porosity[j][i] - epsilon) and j > 0) { // If it goes above saturation, move water to cell below
+                        delta_theta_p(k-Nx) += (theta_p[j][i] - (0.9 * porosity[j][i] - epsilon))/dt;
+                        theta_p[j][i] = 0.9 * porosity[j][i] - epsilon;
                     }
+
+
 
                     auto outputs = hysteresis(theta[j][i], theta_p[j][i], theta_s[j][i], theta_r[j][i],
                                               0.9 * porosity[j][i],
@@ -235,16 +230,9 @@ int main() {
                     theta_new[j][i] =
                             theta[j][i] + dt * 0.5 * (delta_theta(k) + delta_theta_p(k)); // new theta using Heun
 
-//                    if (theta_new[j][i] > (0.9 * porosity[j][i]) || isnan(theta_new[j][i])) { // If it goes above saturation, stop model
-//                        std::cout << "NaN " << theta_new[j][i] << std::endl;
-//                        return 0;
-//                    }
-
-                    if (theta_new[j][i] > (0.9 * porosity[j][i] - epsilon) and j > 0) { // If it goes above saturation, stop model
-
-                        theta_new[j-1][i] = theta_new[j][i] - (0.9 * porosity[j][i] - epsilon);
-                        theta_new[j][i] = (0.9 * porosity[j][i] - epsilon);
-
+                    if (theta_new[j][i] > (0.9 * porosity[j][i] - epsilon)) { // If it goes above saturation, move water to cell below
+                        delta_theta(k-Nx) +=  (theta_new[j][i] - (0.9 * porosity[j][i] - epsilon))/ (0.5 * dt) ;
+                        theta_new[j][i] = 0.9 * porosity[j][i] - epsilon;
                     }
 
                     //==================== Calculate error  =========================

@@ -87,6 +87,7 @@ hysteresis(const double& theta_1, const double& theta_2,  double theta_s,  doubl
             wrc = 1;
             thetaR = 0.;
             psi[1][j][i] = Pw;
+            Swf[1][j][i] = theta_2 / thetaS;
         }
     }
 
@@ -115,6 +116,7 @@ hysteresis(const double& theta_1, const double& theta_2,  double theta_s,  doubl
             wrc = 1;
             thetaR = 0;
             psi[1][j][i] = Pw;
+            Swf[1][j][i] = theta_2 / thetaS;
 
         } else if (abs(psi[1][j][i]) > abs(Pd) or theta_2 < theta_r) { //  Moves to main wetting curve
             wrc = 2;
@@ -162,6 +164,7 @@ hysteresis(const double& theta_1, const double& theta_2,  double theta_s,  doubl
             if (abs(psi[1][j][i]) < abs(Pw)) { // Moves to main wetting curve
                 wrc = 1;
                 psi[1][j][i] = Pw;
+                Swf[1][j][i] = theta_2 / thetaS;
             }
 
 
