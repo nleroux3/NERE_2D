@@ -106,6 +106,10 @@ int main() {
 
     outflow_output.open("outflow.dat");
 
+    std::ofstream height_output;
+
+    height_output.open("height_snowpack.dat");
+
     double dx =  Lx / double(Nx);
     double dy =  Ly_ini / double(Ny);
 
@@ -202,31 +206,43 @@ int main() {
         //=================================================================================
         //============================== Full step hydrology ==============================
         //=================================================================================
+
+
+
+        if (Hn > 0.) {
+
+            int melt_flag = 0;
+
+            for (int i = 0; i < Nx; i++) {
+
+
+                qIn[i] = melt(Hn, y[M - 1][i], Ts[i], T[M - 1][i], Ly[i], Keff[M - 1][i], dryRho[M - 1][i],
+                              theta[M - 1][i], dt);
+
+                melt_layer[i] = Ly[i] - (y[M - 2][i] + dy / 2.); // depth of the melting layer. Used to compute flux if melt_flag = 1
+
+                if (Ly[i] <= (y[M - 2][i] + dy / 2. + 0.002e-3) and
+                    M > 2) { // the top layer disappears if it gets less than 0.01 mm
+                    melt_flag = 1;
+                }
+
+            }
+
+            if (melt_flag == 1) { // Merging of layers
+
+                for (int i = 0; i < Nx; i++) {
+                    qIn[i] += melt_layer[i] * (dryRho[M - 1][i] / 1000. + theta[M - 1][i]);
+                }
+
+                M = M - 1;
+
+            }
+        }
+
+
         bool NotConverged = true; // Condition for convergence of the first and second order solutions of Heun's method
 
         while (NotConverged) {
-
-
-            if (Hn > 0.) {
-
-                int melt_flag = 0;
-
-                for (int i = 0; i < Nx; i++) {
-
-
-                    qIn[i] = melt(Hn, y[M - 1][i], Ts[i], T[M - 1][i], Ly[i], Keff[M - 1][i], dryRho[M - 1][i],
-                                  theta[M - 1][i], dt);
-
-                    melt_layer[i] = Ly[i] - (y[M - 2][i] + dy / 2.); // depth of the melting layer. Used to compute flux if melt_flag = 1
-
-                    if (Ly[i] <= (y[M - 2][i] + dy / 2. + 0.002e-3) and
-                        M > 2) { // the top layer disappears if it gets less than 0.01 mm
-                        melt_flag = 1;
-                    }
-
-                }
-            }
-
 
         //==================== Compute theta_p (intermediate value) (forward Euler) =========================
         Eigen::VectorXd delta_theta_p = Richards(dx, dy, 0, M);
@@ -338,9 +354,9 @@ int main() {
             if (int(time-dt) != int(time) ) {
 
                 std::cout << int(time / tPlot) << std::endl;
-
+                height_output << M << " ";
                 for (int i = 0; i < Nx; ++i) {
-                    for (int j = 0; j < Ny; j++) {
+                    for (int j = 0; j < M; j++) {
 
                         theta_output << theta[j][i] << " ";
                         grain_output << Dgrain[j][i] << " ";
@@ -348,6 +364,8 @@ int main() {
                     }
 
                     outflow_output << K[0][0][i] << " " ;
+                    height_output << Ly[i] << " ";
+
                 }
 
 
@@ -355,6 +373,8 @@ int main() {
                 grain_output << std::endl;
                 density_output << std::endl;
                 outflow_output << std::endl;
+                height_output << std::endl;
+
             }
 
         }
