@@ -341,31 +341,104 @@ int main() {
         for (int j = 0; j < M; ++j) {
             for (int i = 0 ; i < Nx ; ++i) {
 
-                if (j > 0 && j < M - 1) {
-                    Qflux = 1./ pow(dy, 2) * (
-                            (Keff[j + 1][i] + Keff[j][i]) * 0.5 * (T[j + 1][i] - T[j][i]) +
-                            (Keff[j - 1][i] + Keff[j][i]) * 0.5 * (T[j - 1][i] - T[j][i]));
+                if (i > 0 and i < Nx-1) {
 
-                } else if (j == 0) {
+                    if (j > 0 && j < M - 1) {
+                        Qflux = 1. / pow(dy, 2) * (
+                                (Keff[j + 1][i] + Keff[j][i]) * 0.5 * (T[j + 1][i] - T[j][i]) +
+                                (Keff[j - 1][i] + Keff[j][i]) * 0.5 * (T[j - 1][i] - T[j][i])) +
+                                1. / pow(dx, 2) * (
+                                (Keff[j][i + 1] + Keff[j][i]) * 0.5 * (T[j][i + 1] - T[j][i]) +
+                                (Keff[j][i - 1] + Keff[j][i]) * 0.5 * (T[j][i - 1] - T[j][i]))  ;
 
-                    Qflux = 1. / pow(dy, 2) * (
-                            (Keff[j + 1][i] + Keff[j][i]) * 0.5 * (T[j + 1][i] - T[j][i]) +
-                            Qbottom);
+                    } else if (j == 0) {
+
+                        Qflux = 1. / pow(dy, 2) * (
+                                (Keff[j + 1][i] + Keff[j][i]) * 0.5 * (T[j + 1][i] - T[j][i]) +
+                                Qbottom) +
+                                1. / pow(dx, 2) * (
+                                (Keff[j][i + 1] + Keff[j][i]) * 0.5 * (T[j][ i+ 1] - T[j][i]) +
+                                (Keff[j][i - 1] + Keff[j][i]) * 0.5 * (T[j][i - 1] - T[j][i]))  ;
 
 
-                } else if (j == M - 1) {
-                    Qflux = 1.  / melt_layer[i] * (
-                            Keff[j][i] * (Ts[i] - T[j][i]) / (Ly[i] - y[M - 1][i])  +
-                            (Keff[j - 1][i] * Keff[j][i]) * 0.5 * (T[j - 1][i] - T[j][i]) / dy);
+                    } else if (j == M - 1) {
+                        Qflux = 1. / melt_layer[i] * (
+                                Keff[j][i] * (Ts[i] - T[j][i]) / (Ly[i] - y[M - 1][i]) +
+                                (Keff[j - 1][i] * Keff[j][i]) * 0.5 * (T[j - 1][i] - T[j][i]) / dy) +
+                                1. / pow(dx, 2) * (
+                                (Keff[j][i + 1] + Keff[j][i]) * 0.5 * (T[j][i + 1] - T[j][i]) +
+                                (Keff[j][i - 1] + Keff[j][i]) * 0.5 * (T[j][i - 1] - T[j][i]));
+                    }
+
+                } else if (i == 0) { // West boundary, periodic boundary conditions
+
+                    if (j > 0 && j < M - 1) {
+                        Qflux = 1. / pow(dy, 2) * (
+                                (Keff[j + 1][i] + Keff[j][i]) * 0.5 * (T[j + 1][i] - T[j][i]) +
+                                (Keff[j - 1][i] + Keff[j][i]) * 0.5 * (T[j - 1][i] - T[j][i])) +
+                                1. / pow(dx, 2) * (
+                                (Keff[j][i+1] + Keff[j][i]) * 0.5 * (T[j][i + 1] - T[j][i]) +
+                                (Keff[j][Nx - 1] + Keff[j][i]) * 0.5 * (T[j][Nx - 1] - T[j][i]))  ;
+
+                    } else if (j == 0) {
+
+                        Qflux = 1. / pow(dy, 2) * (
+                                (Keff[j + 1][i] + Keff[j][i]) * 0.5 * (T[j + 1][i] - T[j][i]) +
+                                Qbottom) +
+                                1. / pow(dx, 2) * (
+                                (Keff[j][i+1] + Keff[j][i]) * 0.5 * (T[j][i + 1] - T[j][i]) +
+                                (Keff[j][Nx - 1] + Keff[j][i]) * 0.5 * (T[j][Nx - 1] - T[j][i]))  ;
+
+
+                    } else if (j == M - 1) {
+                        Qflux = 1. / melt_layer[i] * (
+                                Keff[j][i] * (Ts[i] - T[j][i]) / (Ly[i] - y[M - 1][i]) +
+                                (Keff[j - 1][i] * Keff[j][i]) * 0.5 * (T[j - 1][i] - T[j][i]) / dy) +
+                                1. / pow(dx, 2) * (
+                                (Keff[j][i + 1] + Keff[j][i]) * 0.5 * (T[j][i + 1] - T[j][i]) +
+                                (Keff[j][Nx - 1] + Keff[j][i]) * 0.5 * (T[j][Nx - 1] - T[j][i]));
+                    }
+
+                } else if (i == Nx - 1 ){ // East boundary, periodic boundary conditions
+
+                    if (j > 0 && j < M - 1) {
+                        Qflux = 1. / pow(dy, 2) * (
+                                (Keff[j + 1][i] + Keff[j][i]) * 0.5 * (T[j + 1][i] - T[j][i]) +
+                                (Keff[j - 1][i] + Keff[j][i]) * 0.5 * (T[j - 1][i] - T[j][i])) +
+                                1. / pow(dx, 2) * (
+                                (Keff[j][0] + Keff[j][i]) * 0.5 * (T[j][0] - T[j][i]) +
+                                (Keff[j][i - 1] + Keff[j][i]) * 0.5 * (T[j][i - 1] - T[j][i]))  ;
+
+                    } else if (j == 0) {
+
+                        Qflux = 1. / pow(dy, 2) * (
+                                (Keff[j + 1][i] + Keff[j][i]) * 0.5 * (T[j + 1][i] - T[j][i]) +
+                                Qbottom) +
+                                1. / pow(dx, 2) * (
+                                (Keff[j][0] + Keff[j][i]) * 0.5 * (T[j][0] - T[j][i]) +
+                                (Keff[j][i - 1] + Keff[j][i]) * 0.5 * (T[j][i - 1] - T[j][i]))  ;
+
+
+                    } else if (j == M - 1) {
+                        Qflux = 1. / melt_layer[i] * (
+                                Keff[j][i] * (Ts[i] - T[j][i]) / (Ly[i] - y[M - 1][i]) +
+                                (Keff[j - 1][i] * Keff[j][i]) * 0.5 * (T[j - 1][i] - T[j][i]) / dy) +
+                                1. / pow(dx, 2) * (
+                                (Keff[j][0] + Keff[j][i]) * 0.5 * (T[j][0] - T[j][i]) +
+                                (Keff[j][i - 1] + Keff[j][i]) * 0.5 * (T[j][i - 1] - T[j][i]));
+
+                    }
                 }
+
 
 
                 double rhoCp = rhoI * Cpi * (1. - porosity[j][i]) + rhoW * Cpw * theta[j][i];
 
                 T_new[j][i] = T[j][i] + dt * Qflux / rhoCp;
-
             }
+
         }
+
 
 
         //==================== Update variables at the end of the time step =========================
