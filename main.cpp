@@ -186,7 +186,7 @@ int main() {
             T[j][i] = T_ini;
             Ly[i] = Ly_ini;
 
-            Keff[j][i] = 1e-9;
+            Keff[j][i] = 2.5e-6 * dryRho[j][i] * dryRho[j][i] - 1.23e-4 * dryRho[j][i] + 0.024 ; 
 
             melt_layer[i] = dy; // depth of the melting layer (used in Richards, changes if Hn > 0)
         }
