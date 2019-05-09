@@ -56,7 +56,7 @@ int main() {
             error = 0,
             dryRho_ini = 300,
             Dgrain_ini = 1e-3,
-            QFlux,
+            Qflux,
             Qbottom = 0.; // Heat flux at the bottom of the snowpack [w/m2]
 
 
@@ -78,7 +78,8 @@ int main() {
             theta_new[Ny][Nx], // predicted theta^(n+1) from Euler
             gamma[Ny][Nx],
             melt_layer[Nx],
-            Ly[Nx];   // Height of the snowpack that changes through time due to melting
+            Ly[Nx],   // Height of the snowpack that changes through time due to melting
+            T_new[Ny][Nx];
 
 
 
@@ -137,11 +138,11 @@ int main() {
             std::normal_distribution<double> r{dryRho_ini, dryRho_ini * 0.05};
             std::normal_distribution<double> d{Dgrain_ini, Dgrain_ini * 0.05};
 
-            dryRho[j][i] = r(gen)  ;
-            Dgrain[j][i] = d(gen)  ;
+//            dryRho[j][i] = r(gen)  ;
+//            Dgrain[j][i] = d(gen)  ;
 
-//            dryRho[j][i] = dryRho_ini  ;
-//            Dgrain[j][i] = Dgrain_ini  ;
+            dryRho[j][i] = dryRho_ini  ;
+            Dgrain[j][i] = Dgrain_ini  ;
 
 //            if (y[j][i] > 0.3) {
 //                std::normal_distribution<double> o{0.5e-3, 0.5e-3 * 0.02};
@@ -328,6 +329,7 @@ int main() {
 
             }
 
+
         } // end while convergence loop
 
 
@@ -335,8 +337,9 @@ int main() {
         //=================================================================================
         //======================== Full step thermodynamics ================================
         //=================================================================================
-        for (int j = 0; j < M; j++) {
-            for (int i =0 ; i < Nx ; i++) {
+
+        for (int j = 0; j < M; ++j) {
+            for (int i = 0 ; i < Nx ; ++i) {
 
                 if (j > 0 && j < M - 1) {
                     Qflux = 1./ pow(dy, 2) * (
@@ -351,7 +354,7 @@ int main() {
 
 
                 } else if (j == M - 1) {
-                    Qflux = 1.  / melt_layer[j][i] * (
+                    Qflux = 1.  / melt_layer[i] * (
                             Keff[j][i] * (Ts[i] - T[j][i]) / (Ly[i] - y[M - 1][i])  +
                             (Keff[j - 1][i] * Keff[j][i]) * 0.5 * (T[j - 1][i] - T[j][i]) / dy);
                 }
@@ -390,6 +393,7 @@ int main() {
         //=================================================================================
 
         time = time + dt;
+
 
         //=================================================================================
         //==============================  write output files  =============================
