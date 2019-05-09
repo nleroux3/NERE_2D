@@ -8,6 +8,7 @@
 #include "Richards.h"
 #include "hysteresis.h"
 #include "KFun.h"
+#include "melt.h"
 #include "global.h"
 #include <Eigen/Sparse>
 #include <fstream>
@@ -20,7 +21,11 @@ double  alpha[Ny][Nx],
         K[2][Ny][Nx],
         alphaW[Ny][Nx],
         Swf[2][Ny][Nx],
-        tau[Ny][Nx];
+        tau[Ny][Nx],
+        qIn[Nx],
+        Ts[Nx],
+        T[Ny][Nx],
+        Keff[Ny][Nx];
 
 
 int main() {
@@ -33,11 +38,12 @@ int main() {
             nu = 1.7e-6,
             tf = 3600. ,
             thetaR_dry = 0.02,
-            qIn = 10e-3/3600.  ,  // Input flux [m/s]
+            qIn_ini = 0. ,  // Input flux [m/s]
             epsilon = 1e-6,
-            time = 0.,
             tolerance = 0.05, // relative truncation error tolerances
             r_min = 0.1,
+            Ts_ini = 0., // Initial snow surface temperature assumed constant [C]
+            T_ini = -5., // Initial snow internal tempeature assumed constant [C]
             EPS = 1e-10,
             s = 0.6,
             dt_new,
@@ -45,6 +51,7 @@ int main() {
             dt_ini = 0.1,
             theta_ini = epsilon,
             dt,
+            Hn = 100., // Input flux for melt [W/m2]
             rhoI = 917., // density of ice [kg/m3]
             error = 0,
             dryRho_ini = 300,
@@ -54,7 +61,8 @@ int main() {
     const int tPlot = 60; // Time interval for plotting [s]
 
 
-    int     wrc[Ny][Nx]; //  0 : initial condition is T, 1: initial condition is theta
+    int     wrc[Ny][Nx], //  0 : initial condition is T, 1: initial condition is theta
+            M = Ny; // Number of vertical numerical cells that change through time due to melting
 
     double  x[Ny][Nx],
             y[Ny][Nx],
@@ -66,7 +74,10 @@ int main() {
             theta_r[Ny][Nx],
             theta_p[Ny][Nx],
             theta_new[Ny][Nx], // predicted theta^(n+1) from Euler
-            gamma[Ny][Nx];
+            gamma[Ny][Nx],
+            melt_layer[Nx],
+            Ly[Nx];   // Height of the snowpack that changes through time due to melting
+
 
 
 
@@ -118,6 +129,7 @@ int main() {
 
             dryRho[j][i] = r(gen)  ;
             Dgrain[j][i] = d(gen)  ;
+
 //            dryRho[j][i] = dryRho_ini  ;
 //            Dgrain[j][i] = Dgrain_ini  ;
 
@@ -130,7 +142,7 @@ int main() {
 
             gamma[j][i] = 2.;
 
-            tau[j][i] = 0.92 - 0.079 * gamma[j][i] - 1.9e-3 * qIn*3600*1e3 + 3e8 * permeability + 4.3e-4 * gamma[j][i] * qIn*3600*1e3 - 1.5e8 * gamma[j][i] * permeability  ;
+            tau[j][i] = 0.92 - 0.079 * gamma[j][i] - 1.9e-3 * qIn_ini*3600*1e3 + 3e8 * permeability + 4.3e-4 * gamma[j][i] * qIn_ini*3600*1e3 - 1.5e8 * gamma[j][i] * permeability  ;
 
             tau_output << tau[j][i] << " " ;
 
@@ -165,6 +177,13 @@ int main() {
 
             K[0][j][i] = KFun(Ks[j][i], 0, i, j);
 
+            qIn[i] = qIn_ini;
+            Ts[i] = Ts_ini;
+            T[j][i] = T_ini;
+            Ly[i] = Ly_ini;
+
+            Keff[j][i] = 1e-9;
+
         }
     }
 
@@ -175,6 +194,7 @@ int main() {
     // =================================================================================================
 
     dt = dt_ini;
+    double time = 0.;
 
     while (time <  tf) {
 
@@ -186,14 +206,36 @@ int main() {
 
         while (NotConverged) {
 
+
+            if (Hn > 0.) {
+
+                int melt_flag = 0;
+
+                for (int i = 0; i < Nx; i++) {
+
+
+                    qIn[i] = melt(Hn, y[M - 1][i], Ts[i], T[M - 1][i], Ly[i], Keff[M - 1][i], dryRho[M - 1][i],
+                                  theta[M - 1][i], dt);
+
+                    melt_layer[i] = Ly[i] - (y[M - 2][i] + dy / 2.); // depth of the melting layer. Used to compute flux if melt_flag = 1
+
+                    if (Ly[i] <= (y[M - 2][i] + dy / 2. + 0.002e-3) and
+                        M > 2) { // the top layer disappears if it gets less than 0.01 mm
+                        melt_flag = 1;
+                    }
+
+                }
+            }
+
+
         //==================== Compute theta_p (intermediate value) (forward Euler) =========================
-        Eigen::VectorXd delta_theta_p = Richards(dx, dy, qIn, 0);
+        Eigen::VectorXd delta_theta_p = Richards(dx, dy, 0, M);
 
 
 
-            int k = Nx*Ny - 1;
+            int k = Nx*M - 1;
 
-            for (int j = Ny-1; j >= 0; --j) {
+            for (int j = M-1; j >= 0; --j) {
                 for (int i = Nx-1; i >= 0; --i) {
 
                     theta_p[j][i] = theta[j][i] + dt * delta_theta_p(k); // new theta predicted using Euler
@@ -219,12 +261,12 @@ int main() {
 
             //==================== Compute theta_new (forward Heun) =========================
 
-            Eigen::VectorXd delta_theta = Richards(dx, dy, qIn, 1);
+            Eigen::VectorXd delta_theta = Richards(dx, dy, 1, M);
 
 
-            k = Nx*Ny - 1;
+            k = Nx*M - 1;
 
-            for (int j = Ny-1; j >= 0; --j) {
+            for (int j = M-1; j >= 0; --j) {
                 for (int i = Nx-1; i >= 0; --i) {
 
                     theta_new[j][i] =
@@ -265,7 +307,7 @@ int main() {
 
         //==================== Calculate psi_new =========================
 
-        for (int j = 0; j < Ny; ++j) {
+        for (int j = 0; j < M; ++j) {
             for (int i = 0; i < Nx; ++i) {
 
                 auto outputs = hysteresis(theta[j][i], theta_new[j][i], theta_s[j][i], theta_r[j][i], 0.9 * porosity[j][i],

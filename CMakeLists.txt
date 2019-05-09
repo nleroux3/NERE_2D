@@ -25,7 +25,7 @@ else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O3")
 endif()
 
-add_executable(NERE_2D main.cpp Richards.cpp Richards.h global.h KFun.cpp KFun.h hysteresis.cpp hysteresis.h)
+add_executable(NERE_2D main.cpp Richards.cpp Richards.h global.h KFun.cpp KFun.h hysteresis.cpp hysteresis.h melt.h melt.cpp)
 
 
 target_link_libraries(NERE_2D ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} Eigen3::Eigen)

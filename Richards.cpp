@@ -3,26 +3,26 @@
 #include <Eigen/Sparse>
 #include <Eigen/SparseLU>
 
-typedef Eigen::Triplet<double> T;
+typedef Eigen::Triplet<double> Tr;
 using namespace Eigen;
 
 
 
 //========================= Richards equation solver  ===============================
-Eigen::VectorXd Richards(const double& dx, const double& dy, const double& qIn, const int& p)
+Eigen::VectorXd Richards(const double& dx, const double& dy, const int& p, const int& M)
 {
 
-    double  KSouth[Ny][Nx],
-            KNorth[Ny][Nx],
-            KEast[Ny][Nx],
-            KWest[Ny][Nx];
+    double  KSouth[M][Nx],
+            KNorth[M][Nx],
+            KEast[M][Nx],
+            KWest[M][Nx];
 
 
-    std::vector<T> coeffs;
+    std::vector<Tr> coeffs;
 
     Eigen::VectorXd F(Ny * Nx);
 
-    for (int j = 0; j < Ny; ++j) {
+    for (int j = 0; j < M; ++j) {
         for (int i = 0; i < Nx; ++i) {
 
 
@@ -67,12 +67,12 @@ Eigen::VectorXd Richards(const double& dx, const double& dy, const double& qIn, 
 
     int k = 0;
 
-    for (int j = 0; j < Ny; ++j) {
+    for (int j = 0; j < M; ++j) {
         for (int i = 0; i < Nx;++i) {
 
             if (j == 0) { //======== BOTTOM BOUNDARY ==================================
 
-                coeffs.emplace_back(T(k,k,1. + tau[j][i] * ((KWest[j][i] + KEast[j][i]) / pow(dx, 2.)
+                coeffs.emplace_back(Tr(k,k,1. + tau[j][i] * ((KWest[j][i] + KEast[j][i]) / pow(dx, 2.)
                                                          + KNorth[j][i] / pow(dy, 2.))));
                 if (i > 0 && i < Nx - 1) {
 
@@ -98,7 +98,7 @@ Eigen::VectorXd Richards(const double& dx, const double& dy, const double& qIn, 
 
             } else if (j == Ny - 1) { //======== TOP BOUNDARY ==================================
 
-                    coeffs.emplace_back(T(k,k,1. + tau[j][i] * ((KWest[j][i] + KEast[j][i]) / pow(dx, 2.)
+                    coeffs.emplace_back(Tr(k,k,1. + tau[j][i] * ((KWest[j][i] + KEast[j][i]) / pow(dx, 2.)
                                              + KSouth[j][i] / pow(dy, 2.))));
 
                 if (i > 0 && i < Nx - 1) {
@@ -106,27 +106,27 @@ Eigen::VectorXd Richards(const double& dx, const double& dy, const double& qIn, 
                     F(k) = (-KWest[j][i] * (psi[p][j][i] - psi[p][j][i - 1]) / pow(dx, 2.)
                             + KEast[j][i] * (psi[p][j][i + 1] - psi[p][j][i]) / pow(dx, 2.)
                             + KSouth[j][i] * (psi[p][j - 1][i] - psi[p][j][i]) / pow(dy, 2.)
-                            + (qIn - KSouth[j][i]) / dy);
+                            + (qIn[i] - KSouth[j][i]) / dy);
 
                 } else if (i == 0) {
 
                     F(k) = (-KWest[j][i] * (psi[p][j][i] - psi[p][j][Nx - 1]) / pow(dx, 2.)
                             + KEast[j][i] * (psi[p][j][i + 1] - psi[p][j][i]) / pow(dx, 2.)
                             + KSouth[j][i] * (psi[p][j - 1][i] - psi[p][j][i]) / pow(dy, 2.)
-                            + (qIn - KSouth[j][i]) / dy);
+                            + (qIn[i] - KSouth[j][i]) / dy);
 
                 } else if (i == Nx - 1) {
 
                     F(k) = (-KWest[j][i] * (psi[p][j][i] - psi[p][j][i - 1]) / pow(dx, 2.)
                             + KEast[j][i] * (psi[p][j][0] - psi[p][j][i]) / pow(dx, 2.)
                             + KSouth[j][i] * (psi[p][j - 1][i] - psi[p][j][i]) / pow(dy, 2.)
-                            + (qIn - KSouth[j][i]) / dy);
+                            + (qIn[i] - KSouth[j][i]) / dy);
                 }
 
             } else {
 
 
-                coeffs.emplace_back(T(k,k,1. + tau[j][i] * ((KWest[j][i] + KEast[j][i]) / pow(dx, 2.)
+                coeffs.emplace_back(Tr(k,k,1. + tau[j][i] * ((KWest[j][i] + KEast[j][i]) / pow(dx, 2.)
                                               + (KSouth[j][i] + KNorth[j][i]) / pow(dy, 2.))));
                 if (i == 0) {
 
@@ -155,23 +155,23 @@ Eigen::VectorXd Richards(const double& dx, const double& dy, const double& qIn, 
             }
 
             if (i > 0) {
-                coeffs.emplace_back(T(k,k-1,-tau[j][i - 1] * KWest[j][i] / pow(dx, 2.)));
+                coeffs.emplace_back(Tr(k,k-1,-tau[j][i - 1] * KWest[j][i] / pow(dx, 2.)));
             } else {
-                coeffs.emplace_back(T(k,(j + 1) * Nx - 1,-tau[j][Nx - 1] * KWest[j][i] / pow(dx, 2.)));
+                coeffs.emplace_back(Tr(k,(j + 1) * Nx - 1,-tau[j][Nx - 1] * KWest[j][i] / pow(dx, 2.)));
             }
 
             if (i < Nx - 1) {
-                coeffs.emplace_back(T(k,k+1,-tau[j][i + 1] * KEast[j][i] / pow(dx, 2.)));
+                coeffs.emplace_back(Tr(k,k+1,-tau[j][i + 1] * KEast[j][i] / pow(dx, 2.)));
             } else {
-                coeffs.emplace_back(T(k, j*Nx, -tau[j][0] * KEast[j][i] / pow(dx, 2.)));
+                coeffs.emplace_back(Tr(k, j*Nx, -tau[j][0] * KEast[j][i] / pow(dx, 2.)));
             }
 
             if (j > 0) {
-                coeffs.emplace_back(T(k, k-Nx, -tau[j - 1][i] * KSouth[j][i] / pow(dy, 2.)));
+                coeffs.emplace_back(Tr(k, k-Nx, -tau[j - 1][i] * KSouth[j][i] / pow(dy, 2.)));
             }
 
             if (j < Ny - 1) {
-                coeffs.emplace_back(T(k, k+Nx, -tau[j + 1][i] * KNorth[j][i] / pow(dy, 2.)));
+                coeffs.emplace_back(Tr(k, k+Nx, -tau[j + 1][i] * KNorth[j][i] / pow(dy, 2.)));
             }
 
 
@@ -179,7 +179,7 @@ Eigen::VectorXd Richards(const double& dx, const double& dy, const double& qIn, 
         }
     }
 
-    Eigen::SparseMatrix<double> Mat(Nx * Ny, Nx * Ny);
+    Eigen::SparseMatrix<double> Mat(Nx * M, Nx * M);
     Mat.setFromTriplets(coeffs.begin(), coeffs.end());
 
 
