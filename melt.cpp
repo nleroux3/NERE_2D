@@ -5,12 +5,10 @@
 double melt(double& Hn, double& y, double& Ts, double T, double& Ly, double Keff, double dryRho,
             double theta, double dt) {
 
-    double Vn,
-            Lf = 338000.,
-            rhoW = 1000.;
+    double Vn;
 
 
-    double Ts_ini = Ts, // Temperature at the beginning of the time step
+    double  Ts_ini = Ts, // Temperature at the beginning of the time step
             Ly_ini = Ly;
 
     Ts = (Ly-y) / Keff * Hn + T;

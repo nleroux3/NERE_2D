@@ -55,7 +55,9 @@ int main() {
             rhoI = 917., // density of ice [kg/m3]
             error = 0,
             dryRho_ini = 300,
-            Dgrain_ini = 1e-3;
+            Dgrain_ini = 1e-3,
+            QFlux,
+            Qbottom = 0.; // Heat flux at the bottom of the snowpack [w/m2]
 
 
     const int tPlot = 60; // Time interval for plotting [s]
@@ -109,6 +111,10 @@ int main() {
     std::ofstream height_output;
 
     height_output.open("height_snowpack.dat");
+
+    std::ofstream T_output;
+
+    T_output.open("T.dat");
 
     double dx =  Lx / double(Nx);
     double dy =  Ly_ini / double(Ny);
@@ -186,7 +192,7 @@ int main() {
             T[j][i] = T_ini;
             Ly[i] = Ly_ini;
 
-            Keff[j][i] = 2.5e-6 * dryRho[j][i] * dryRho[j][i] - 1.23e-4 * dryRho[j][i] + 0.024 ; 
+            Keff[j][i] = 2.5e-6 * dryRho[j][i] * dryRho[j][i] - 1.23e-4 * dryRho[j][i] + 0.024 ;
 
             melt_layer[i] = dy; // depth of the melting layer (used in Richards, changes if Hn > 0)
         }
@@ -219,6 +225,8 @@ int main() {
 
                 qIn[i] = melt(Hn, y[M - 1][i], Ts[i], T[M - 1][i], Ly[i], Keff[M - 1][i], dryRho[M - 1][i],
                               theta[M - 1][i], dt);
+
+                qIn[i] = 0.;
 
                 melt_layer[i] = Ly[i] - (y[M - 2][i] + dy / 2.); // depth of the melting layer. Used to compute flux if melt_flag = 1
 
@@ -322,7 +330,42 @@ int main() {
 
         } // end while convergence loop
 
-        //==================== Calculate psi_new =========================
+
+
+        //=================================================================================
+        //======================== Full step thermodynamics ================================
+        //=================================================================================
+        for (int j = 0; j < M; j++) {
+            for (int i =0 ; i < Nx ; i++) {
+
+                if (j > 0 && j < M - 1) {
+                    Qflux = 1./ pow(dy, 2) * (
+                            (Keff[j + 1][i] + Keff[j][i]) * 0.5 * (T[j + 1][i] - T[j][i]) +
+                            (Keff[j - 1][i] + Keff[j][i]) * 0.5 * (T[j - 1][i] - T[j][i]));
+
+                } else if (j == 0) {
+
+                    Qflux = 1. / pow(dy, 2) * (
+                            (Keff[j + 1][i] + Keff[j][i]) * 0.5 * (T[j + 1][i] - T[j][i]) +
+                            Qbottom);
+
+
+                } else if (j == M - 1) {
+                    Qflux = 1.  / melt_layer[j][i] * (
+                            Keff[j][i] * (Ts[i] - T[j][i]) / (Ly[i] - y[M - 1][i])  +
+                            (Keff[j - 1][i] * Keff[j][i]) * 0.5 * (T[j - 1][i] - T[j][i]) / dy);
+                }
+
+
+                double rhoCp = rhoI * Cpi * (1. - porosity[j][i]) + rhoW * Cpw * theta[j][i];
+
+                T_new[j][i] = T[j][i] + dt * Qflux / rhoCp;
+
+            }
+        }
+
+
+        //==================== Update variables at the end of the time step =========================
 
         for (int j = 0; j < M; ++j) {
             for (int i = 0; i < Nx; ++i) {
@@ -337,6 +380,7 @@ int main() {
                 theta[j][i] = theta_new[j][i];
                 Swf[0][j][i] = Swf[1][j][i];
                 K[0][j][i]  =  KFun(Ks[j][i], 0, i, j);
+                T[j][i] = T_new[j][i];
 
             }
         }
@@ -356,12 +400,14 @@ int main() {
 
                 std::cout << int(time / tPlot) << std::endl;
                 height_output << M << " ";
+
                 for (int i = 0; i < Nx; ++i) {
                     for (int j = 0; j < M; j++) {
 
                         theta_output << theta[j][i] << " ";
                         grain_output << Dgrain[j][i] << " ";
                         density_output << dryRho[j][i] << " " ;
+                        T_output << T[j][i] << " " ;
                     }
 
                     outflow_output << K[0][0][i] << " " ;
@@ -375,6 +421,7 @@ int main() {
                 density_output << std::endl;
                 outflow_output << std::endl;
                 height_output << std::endl;
+                T_output << std::endl;
 
             }
 
@@ -388,6 +435,8 @@ int main() {
     theta_output.close();
     grain_output.close();
     density_output.close();
+    height_output.close();
+    T_output.close();
 
     printf("Time taken: %.2fs\n", (double) (clock() - tStart) / CLOCKS_PER_SEC);
 
