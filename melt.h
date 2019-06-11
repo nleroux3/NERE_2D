@@ -5,5 +5,4 @@
 #pragma once
 
 
-double melt(double&, double& , double& , double , double& , double , double ,
-            double , double ) ;
+double melt(double& ,  double , double, double& , double&, double, double) ;

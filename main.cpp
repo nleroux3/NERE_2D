@@ -2,6 +2,7 @@
 #include <math.h>
 #include <time.h>
 #include <algorithm>
+#include <math.h>
 #include <random>
 #include <tuple>
 #include <omp.h>
@@ -38,9 +39,9 @@ int main() {
             nu = 1.7e-6,
             tf = 3600. ,
             thetaR_dry = 0.02,
-            qIn_ini = 0. ,  // Input flux [m/s]
+            qIn_ini = 10e-3/3600. ,  // Input flux [m/s]
             epsilon = 1e-6,
-            tolerance = 0.05, // relative truncation error tolerances
+            tolerance = 0.01, // relative truncation error tolerances
             r_min = 0.1,
             Ts_ini = 0., // Initial snow surface temperature assumed constant [C]
             T_ini = -5., // Initial snow internal tempeature assumed constant [C]
@@ -51,13 +52,14 @@ int main() {
             dt_ini = 0.1,
             theta_ini = epsilon,
             dt,
-            Hn = 100., // Input flux for melt [W/m2]
+            Hn_ini = 0., // Input flux for melt [W/m2]
             rhoI = 917., // density of ice [kg/m3]
             error = 0,
             dryRho_ini = 300,
             Dgrain_ini = 1e-3,
             Qflux,
-            Qbottom = 0.; // Heat flux at the bottom of the snowpack [w/m2]
+            Qbottom = 0., // Heat flux at the bottom of the snowpack [w/m2]
+            Hn;
 
 
     const int tPlot = 60; // Time interval for plotting [s]
@@ -86,8 +88,8 @@ int main() {
 
     std::random_device rd;
 //    std::mt19937 gen(5489u);
-//    std::mt19937 gen{1};
-    std::mt19937 gen{rd()};
+    std::mt19937 gen{1};
+//    std::mt19937 gen{rd()};
 
     std::ofstream tau_output;
 
@@ -138,22 +140,20 @@ int main() {
             std::normal_distribution<double> r{dryRho_ini, dryRho_ini * 0.05};
             std::normal_distribution<double> d{Dgrain_ini, Dgrain_ini * 0.05};
 
-//            dryRho[j][i] = r(gen)  ;
-//            Dgrain[j][i] = d(gen)  ;
+            dryRho[j][i] = r(gen)  ;
+            Dgrain[j][i] = d(gen)  ;
 
-            dryRho[j][i] = dryRho_ini  ;
-            Dgrain[j][i] = Dgrain_ini  ;
+//            dryRho[j][i] = dryRho_ini  ;
+//            Dgrain[j][i] = Dgrain_ini  ;
 
 //            if (y[j][i] > 0.3) {
 //                std::normal_distribution<double> o{0.5e-3, 0.5e-3 * 0.02};
 //                Dgrain[j][i] = o(gen)  ;
 //            }
 
-            double permeability = 3. * pow(Dgrain[j][i] * 0.5, 2.) * exp(-0.013 * dryRho[j][i]);
-
             gamma[j][i] = 2.;
 
-            tau[j][i] = 0.92 - 0.079 * gamma[j][i] - 1.9e-3 * qIn_ini*3600*1e3 + 3e8 * permeability + 4.3e-4 * gamma[j][i] * qIn_ini*3600*1e3 - 1.5e8 * gamma[j][i] * permeability  ;
+            tau[j][i] = 10.;
 
             tau_output << tau[j][i] << " " ;
 
@@ -163,9 +163,7 @@ int main() {
 
             alpha[j][i] = 4.4e6 * pow(dryRho[j][i] / Dgrain[j][i], -0.98);
 
-            alphaW[j][i] = gamma[j][i] * alpha[j][i];
-
-            n[j][i] = 1. + 2.7e-3 * pow(dryRho[j][i] / Dgrain[j][i], 0.61);
+            alphaW[j][i] = gamma[j][i] * alpha[j][i];           n[j][i] = 1. + 2.7e-3 * pow(dryRho[j][i] / Dgrain[j][i], 0.61);
 
             Ks[j][i] = 9.81 / nu * 3. * pow(Dgrain[j][i] * 0.5, 2.) * exp(-0.013 * dryRho[j][i]);
 
@@ -188,12 +186,18 @@ int main() {
 
             K[0][j][i] = KFun(Ks[j][i], 0, i, j);
 
-            qIn[i] = qIn_ini;
+
+            qIn[i] = qIn_ini ;
+
             Ts[i] = Ts_ini;
             T[j][i] = T_ini;
             Ly[i] = Ly_ini;
 
-            Keff[j][i] = 2.5e-6 * dryRho[j][i] * dryRho[j][i] - 1.23e-4 * dryRho[j][i] + 0.024 ;
+            double Kw = 0.569;
+
+            Keff[j][i] = (2.5e-6 * pow(dryRho[j][i], 2.) - 1.23e-4 * dryRho[j][i] + 0.024) * (1. - theta[j][i]) +
+                    theta[j][i] * Kw;
+
 
             melt_layer[i] = dy; // depth of the melting layer (used in Richards, changes if Hn > 0)
         }
@@ -212,9 +216,115 @@ int main() {
 
 
         //=================================================================================
-        //============================== Full step hydrology ==============================
+        //======================== Full step thermodynamics ================================
         //=================================================================================
 
+        Hn = Hn_ini;
+
+        for (int j = 0; j < M; ++j) {
+            for (int i = 0 ; i < Nx ; ++i) {
+
+                if (i > 0 and i < Nx-1) {
+
+                    if (j > 0 && j < M - 1) {
+                        Qflux = 1. / pow(dy, 2) * (
+                                (Keff[j + 1][i] + Keff[j][i])* 0.5 * (T[j + 1][i] - T[j][i]) +
+                                (Keff[j - 1][i] + Keff[j][i])* 0.5 * (T[j - 1][i] - T[j][i])) +
+                                1. / pow(dx, 2) * (
+                                        (Keff[j][i + 1] + Keff[j][i]) * 0.5 * (T[j][i + 1] - T[j][i]) +
+                                        (Keff[j][i - 1] + Keff[j][i]) * 0.5 * (T[j][i - 1] - T[j][i]))  ;
+
+                    } else if (j == 0) {
+
+                        Qflux = 1. / pow(dy, 2) * (
+                                (Keff[j + 1][i] + Keff[j][i]) * 0.5 * (T[j + 1][i] - T[j][i]) +
+                                Qbottom) +
+                                1. / pow(dx, 2) * (
+                                        (Keff[j][i + 1] + Keff[j][i]) * 0.5 * (T[j][ i+ 1] - T[j][i]) +
+                                        (Keff[j][i - 1] + Keff[j][i]) * 0.5 * (T[j][i - 1] - T[j][i]))  ;
+
+
+                    } else if (j == M - 1) { // top layer
+                        Qflux = 1. / melt_layer[i] * (
+                                Hn +
+                                (Keff[j - 1][i] * Keff[j][i]) * 0.5 * (T[j - 1][i] - T[j][i]) / dy) +
+                                1. / pow(dx, 2) * (
+                                        (Keff[j][i + 1] + Keff[j][i]) * 0.5 * (T[j][i + 1] - T[j][i]) +
+                                        (Keff[j][i - 1] + Keff[j][i]) * 0.5 * (T[j][i - 1] - T[j][i]));
+                    }
+
+                } else if (i == 0) { // West boundary, periodic boundary conditions
+
+                    if (j > 0 && j < M - 1) {
+                        Qflux = 1. / pow(dy, 2) * (
+                                (Keff[j + 1][i] + Keff[j][i]) * 0.5 * (T[j + 1][i] - T[j][i]) +
+                                (Keff[j - 1][i] + Keff[j][i]) * 0.5 * (T[j - 1][i] - T[j][i])) +
+                                1. / pow(dx, 2) * (
+                                        (Keff[j][i+1] + Keff[j][i]) * 0.5 * (T[j][i + 1] - T[j][i]) +
+                                        (Keff[j][Nx - 1] + Keff[j][i]) * 0.5 * (T[j][Nx - 1] - T[j][i]))  ;
+
+                    } else if (j == 0) {
+
+                        Qflux = 1. / pow(dy, 2) * (
+                                (Keff[j + 1][i] + Keff[j][i]) * 0.5 * (T[j + 1][i] - T[j][i]) +
+                                Qbottom) +
+                                1. / pow(dx, 2) * (
+                                        (Keff[j][i+1] + Keff[j][i]) * 0.5 * (T[j][i + 1] - T[j][i]) +
+                                        (Keff[j][Nx - 1] + Keff[j][i]) * 0.5 * (T[j][Nx - 1] - T[j][i]))  ;
+
+
+                    } else if (j == M - 1) { // top layer
+                        Qflux = 1. / melt_layer[i] * (
+                                Hn +
+                                (Keff[j - 1][i] * Keff[j][i]) * 0.5 * (T[j - 1][i] - T[j][i]) / dy) +
+                                1. / pow(dx, 2) *
+                                ((Keff[j][i + 1] + Keff[j][i]) * 0.5 * (T[j][i + 1] - T[j][i]) +
+                                (Keff[j][Nx - 1] + Keff[j][i]) * 0.5 * (T[j][Nx - 1] - T[j][i]));
+                    }
+
+                } else if (i == Nx - 1 ){ // East boundary, periodic boundary conditions
+
+                    if (j > 0 && j < M - 1) {
+                        Qflux = 1. / pow(dy, 2) * (
+                                (Keff[j + 1][i] + Keff[j][i]) * 0.5 * (T[j + 1][i] - T[j][i]) +
+                                (Keff[j - 1][i] + Keff[j][i]) * 0.5 * (T[j - 1][i] - T[j][i])) +
+                                1. / pow(dx, 2) * (
+                                        (Keff[j][0] + Keff[j][i]) * 0.5 * (T[j][0] - T[j][i]) +
+                                        (Keff[j][i - 1] + Keff[j][i]) * 0.5 * (T[j][i - 1] - T[j][i]))  ;
+
+                    } else if (j == 0) {
+
+                        Qflux = 1. / pow(dy, 2) * (
+                                (Keff[j + 1][i] + Keff[j][i]) * 0.5 * (T[j + 1][i] - T[j][i]) +
+                                Qbottom) +
+                                1. / pow(dx, 2) * (
+                                        (Keff[j][0] + Keff[j][i]) * 0.5 * (T[j][0] - T[j][i]) +
+                                        (Keff[j][i - 1] + Keff[j][i]) * 0.5 * (T[j][i - 1] - T[j][i]))  ;
+
+
+                    } else if (j == M - 1) {  // Top layer
+
+                        Qflux = 1. / melt_layer[i] * (
+                                Hn +
+                                (Keff[j - 1][i] * Keff[j][i]) * 0.5 * (T[j - 1][i] - T[j][i]) / dy) +
+                                1. / pow(dx, 2) * ((Keff[j][0] + Keff[j][i]) * 0.5 * (T[j][0] - T[j][i]) +
+                                (Keff[j][i - 1] + Keff[j][i]) * 0.5 * (T[j][i - 1] - T[j][i]));
+
+                    }
+                }
+
+
+
+                double rhoCp = rhoI * Cpi * (1. - porosity[j][i]) + rhoW * Cpw * theta[j][i];
+
+                T_new[j][i] = T[j][i] + dt * Qflux / rhoCp;
+            }
+
+        }
+
+        //=================================================================================
+        //======================== Melt and upper BC for heat =============================
+        //=================================================================================
 
 
         if (Hn > 0.) {
@@ -223,19 +333,28 @@ int main() {
 
             for (int i = 0; i < Nx; i++) {
 
+                    if (T_new[M-1][i] >= 0. and T[M-1][i] < 0.){
+                        Hn = Hn_ini  + dryRho[M-1][i] * Cpi * T[M-1][i] * melt_layer[i] / dt;
+                        T_new[M-1][i] = 0.;
+                    } else if (T_new[M-1][i] >= 0. and T[M-1][i] >= 0.) {
+                        T_new[M-1][i] = 0.;
+                    } else if (T_new[M-1][i] == 0.) {
+                        Hn = 0.;
+                    }
 
-                qIn[i] = melt(Hn, y[M - 1][i], Ts[i], T[M - 1][i], Ly[i], Keff[M - 1][i], dryRho[M - 1][i],
-                              theta[M - 1][i], dt);
+                if (T[M - 1][i] == 0.) {
 
-                qIn[i] = 0.;
 
-                melt_layer[i] = Ly[i] - (y[M - 2][i] + dy / 2.); // depth of the melting layer. Used to compute flux if melt_flag = 1
+                    qIn[i] = melt(Hn, dryRho[M - 1][i], theta[M - 1][i], Ly[i], y[M-1][i], Ly_ini, dt);
 
-                if (Ly[i] <= (y[M - 2][i] + dy / 2. + 0.002e-3) and
-                    M > 2) { // the top layer disappears if it gets less than 0.01 mm
-                    melt_flag = 1;
+                    melt_layer[i] = Ly[i] - (y[M - 2][i] + dy / 2.); // depth of the melting layer. Used to compute flux if melt_flag = 1
+
+                    if (Ly[i] <= (y[M - 2][i] + dy / 2. + 0.002e-3) and
+                        M > 2) { // the top layer disappears if it gets less than 0.01 mm
+                        melt_flag = 1;
+                    }
+
                 }
-
             }
 
             if (melt_flag == 1) { // Merging of layers
@@ -248,6 +367,14 @@ int main() {
 
             }
         }
+
+
+
+
+        //=================================================================================
+        //============================== Full step hydrology ==============================
+        //=================================================================================
+
 
 
         bool NotConverged = true; // Condition for convergence of the first and second order solutions of Heun's method
@@ -275,7 +402,6 @@ int main() {
                     auto outputs = hysteresis(theta[j][i], theta_p[j][i], theta_s[j][i], theta_r[j][i],
                                               0.9 * porosity[j][i],
                                               thetaR[j][i], wrc[j][i], thetaR_dry, i, j);
-
 
                     K[1][j][i] = KFun(Ks[j][i], 1, i, j);
 
@@ -313,6 +439,8 @@ int main() {
                     }
 
                     k -= 1;
+
+
                 }
             }
 
@@ -332,111 +460,48 @@ int main() {
 
         } // end while convergence loop
 
-
-
         //=================================================================================
-        //======================== Full step thermodynamics ================================
+        //======================== Refreezing and updating variables  =====================
         //=================================================================================
 
         for (int j = 0; j < M; ++j) {
-            for (int i = 0 ; i < Nx ; ++i) {
-
-                if (i > 0 and i < Nx-1) {
-
-                    if (j > 0 && j < M - 1) {
-                        Qflux = 1. / pow(dy, 2) * (
-                                (Keff[j + 1][i] + Keff[j][i]) * 0.5 * (T[j + 1][i] - T[j][i]) +
-                                (Keff[j - 1][i] + Keff[j][i]) * 0.5 * (T[j - 1][i] - T[j][i])) +
-                                1. / pow(dx, 2) * (
-                                (Keff[j][i + 1] + Keff[j][i]) * 0.5 * (T[j][i + 1] - T[j][i]) +
-                                (Keff[j][i - 1] + Keff[j][i]) * 0.5 * (T[j][i - 1] - T[j][i]))  ;
-
-                    } else if (j == 0) {
-
-                        Qflux = 1. / pow(dy, 2) * (
-                                (Keff[j + 1][i] + Keff[j][i]) * 0.5 * (T[j + 1][i] - T[j][i]) +
-                                Qbottom) +
-                                1. / pow(dx, 2) * (
-                                (Keff[j][i + 1] + Keff[j][i]) * 0.5 * (T[j][ i+ 1] - T[j][i]) +
-                                (Keff[j][i - 1] + Keff[j][i]) * 0.5 * (T[j][i - 1] - T[j][i]))  ;
-
-
-                    } else if (j == M - 1) {
-                        Qflux = 1. / melt_layer[i] * (
-                                Keff[j][i] * (Ts[i] - T[j][i]) / (Ly[i] - y[M - 1][i]) +
-                                (Keff[j - 1][i] * Keff[j][i]) * 0.5 * (T[j - 1][i] - T[j][i]) / dy) +
-                                1. / pow(dx, 2) * (
-                                (Keff[j][i + 1] + Keff[j][i]) * 0.5 * (T[j][i + 1] - T[j][i]) +
-                                (Keff[j][i - 1] + Keff[j][i]) * 0.5 * (T[j][i - 1] - T[j][i]));
-                    }
-
-                } else if (i == 0) { // West boundary, periodic boundary conditions
-
-                    if (j > 0 && j < M - 1) {
-                        Qflux = 1. / pow(dy, 2) * (
-                                (Keff[j + 1][i] + Keff[j][i]) * 0.5 * (T[j + 1][i] - T[j][i]) +
-                                (Keff[j - 1][i] + Keff[j][i]) * 0.5 * (T[j - 1][i] - T[j][i])) +
-                                1. / pow(dx, 2) * (
-                                (Keff[j][i+1] + Keff[j][i]) * 0.5 * (T[j][i + 1] - T[j][i]) +
-                                (Keff[j][Nx - 1] + Keff[j][i]) * 0.5 * (T[j][Nx - 1] - T[j][i]))  ;
-
-                    } else if (j == 0) {
-
-                        Qflux = 1. / pow(dy, 2) * (
-                                (Keff[j + 1][i] + Keff[j][i]) * 0.5 * (T[j + 1][i] - T[j][i]) +
-                                Qbottom) +
-                                1. / pow(dx, 2) * (
-                                (Keff[j][i+1] + Keff[j][i]) * 0.5 * (T[j][i + 1] - T[j][i]) +
-                                (Keff[j][Nx - 1] + Keff[j][i]) * 0.5 * (T[j][Nx - 1] - T[j][i]))  ;
-
-
-                    } else if (j == M - 1) {
-                        Qflux = 1. / melt_layer[i] * (
-                                Keff[j][i] * (Ts[i] - T[j][i]) / (Ly[i] - y[M - 1][i]) +
-                                (Keff[j - 1][i] * Keff[j][i]) * 0.5 * (T[j - 1][i] - T[j][i]) / dy) +
-                                1. / pow(dx, 2) * (
-                                (Keff[j][i + 1] + Keff[j][i]) * 0.5 * (T[j][i + 1] - T[j][i]) +
-                                (Keff[j][Nx - 1] + Keff[j][i]) * 0.5 * (T[j][Nx - 1] - T[j][i]));
-                    }
-
-                } else if (i == Nx - 1 ){ // East boundary, periodic boundary conditions
-
-                    if (j > 0 && j < M - 1) {
-                        Qflux = 1. / pow(dy, 2) * (
-                                (Keff[j + 1][i] + Keff[j][i]) * 0.5 * (T[j + 1][i] - T[j][i]) +
-                                (Keff[j - 1][i] + Keff[j][i]) * 0.5 * (T[j - 1][i] - T[j][i])) +
-                                1. / pow(dx, 2) * (
-                                (Keff[j][0] + Keff[j][i]) * 0.5 * (T[j][0] - T[j][i]) +
-                                (Keff[j][i - 1] + Keff[j][i]) * 0.5 * (T[j][i - 1] - T[j][i]))  ;
-
-                    } else if (j == 0) {
-
-                        Qflux = 1. / pow(dy, 2) * (
-                                (Keff[j + 1][i] + Keff[j][i]) * 0.5 * (T[j + 1][i] - T[j][i]) +
-                                Qbottom) +
-                                1. / pow(dx, 2) * (
-                                (Keff[j][0] + Keff[j][i]) * 0.5 * (T[j][0] - T[j][i]) +
-                                (Keff[j][i - 1] + Keff[j][i]) * 0.5 * (T[j][i - 1] - T[j][i]))  ;
-
-
-                    } else if (j == M - 1) {
-                        Qflux = 1. / melt_layer[i] * (
-                                Keff[j][i] * (Ts[i] - T[j][i]) / (Ly[i] - y[M - 1][i]) +
-                                (Keff[j - 1][i] * Keff[j][i]) * 0.5 * (T[j - 1][i] - T[j][i]) / dy) +
-                                1. / pow(dx, 2) * (
-                                (Keff[j][0] + Keff[j][i]) * 0.5 * (T[j][0] - T[j][i]) +
-                                (Keff[j][i - 1] + Keff[j][i]) * 0.5 * (T[j][i - 1] - T[j][i]));
-
-                    }
-                }
-
-
+            for (int i = 0; i < Nx; ++i) {
 
                 double rhoCp = rhoI * Cpi * (1. - porosity[j][i]) + rhoW * Cpw * theta[j][i];
 
-                T_new[j][i] = T[j][i] + dt * Qflux / rhoCp;
-            }
+                double theta_f = (-rhoCp * T_new[j][i]) / (Lf * rhoW);
 
+//                if (j == M-2 and i == 2) {
+//                    std::cout << 111 << " " << theta_new[j][i] << " " << T_new[j][i] << std::endl;
+//                }
+
+                if (T_new[j][i] < 0.) {
+                    if (theta_f + epsilon < theta_new[j][i]) { //   not all liquid water content refreezes
+
+                        T_new[j][i] = 0.;
+                        theta_new[j][i] -= theta_f;
+                        double thetaI = (1. - porosity[j][i]) + theta_f * rhoW / rhoI;
+                        porosity[j][i] = 1. - thetaI;
+                        dryRho[j][i] = thetaI * rhoI;
+
+                    } else  {  // all liquid water content refreezes,  i.e. freeze = water_content
+
+                        T_new[j][i] += (theta_new[j][i] - epsilon) * Lf * rhoW / rhoCp;
+                        double thetaI = (1. - porosity[j][i]) + (theta_new[j][i] - epsilon) * rhoW / rhoI;
+                        theta_new[j][i] = epsilon;
+                        porosity[j][i] = 1. - thetaI;
+                        dryRho[j][i] = thetaI * rhoI;
+
+                    }
+//                    if (j == M-2 and i == 2) {
+//                        std::cout << 222 << " " << theta_new[j][i] << " " << T_new[j][i] << std::endl;
+//                    }
+
+
+                }
+
+
+            }
         }
 
 
@@ -456,7 +521,19 @@ int main() {
                 theta[j][i] = theta_new[j][i];
                 Swf[0][j][i] = Swf[1][j][i];
                 K[0][j][i]  =  KFun(Ks[j][i], 0, i, j);
+
+
                 T[j][i] = T_new[j][i];
+//
+                alpha[j][i] = 4.4e6 * pow(dryRho[j][i] / Dgrain[j][i], -0.98);
+                alphaW[j][i] = gamma[j][i] * alpha[j][i];
+                n[j][i] = 1. + 2.7e-3 * pow(dryRho[j][i] / Dgrain[j][i], 0.61);
+                Ks[j][i] = 9.81 / nu * 3. * pow(Dgrain[j][i] * 0.5, 2.) * exp(-0.013 * dryRho[j][i]);
+
+                double Kw = 0.569;
+
+                Keff[j][i] = (2.5e-6 * pow(dryRho[j][i], 2.) - 1.23e-4 * dryRho[j][i] + 0.024) * (1. - theta[j][i]) +
+                             theta[j][i] * Kw;
 
             }
         }

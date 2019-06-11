@@ -27,8 +27,11 @@ Eigen::VectorXd Richards(const double& dx, const double& dy, const int& p, const
 
 
             if (j > 0) {
-                KSouth[j][i] = sqrt(K[p][j - 1][i] * K[p][j][i]);
-//                KSouth[j][i] = (K[j - 1][i] + K[j][i])  * 0.5;
+//                KSouth[j][i] = sqrt(K[p][j - 1][i] * K[p][j][i]);
+                KSouth[j][i] = (K[p][j - 1][i] + K[p][j][i])  * 0.5;
+//                KSouth[j][i] = 2. * (K[p][j - 1][i] * K[p][j][i]) / (K[p][j - 1][i] + K[p][j][i]);
+//                KSouth[j][i] = K[p][j][i];
+
 
             } else {
                 KSouth[j][i] = K[p][j][i];
@@ -36,7 +39,10 @@ Eigen::VectorXd Richards(const double& dx, const double& dy, const int& p, const
 
             if (j < Ny - 1) {
                 KNorth[j][i] = sqrt(K[p][j + 1][i] * K[p][j][i]);
-//                KNorth[j][i] = (K[j + 1][i] + K[j][i]) * 0.5;
+//                KNorth[j][i] = (K[p][j + 1][i] + K[p][j][i]) * 0.5;
+
+//                KNorth[j][i] = 2. * (K[p][j + 1][i] * K[p][j][i]) / (K[p][j + 1][i] + K[p][j][i]);
+//                KNorth[j][i] = K[p][j + 1][i] ;
 
             } else {
                 KNorth[j][i] = K[p][j][i];
@@ -44,21 +50,36 @@ Eigen::VectorXd Richards(const double& dx, const double& dy, const int& p, const
 
             if (i > 0) {
                 KWest[j][i] = sqrt(K[p][j][i - 1] * K[p][j][i]);
-//                KWest[j][i] = (K[j][i - 1] + K[j][i]) * 0.5;
+//                KWest[j][i] = (K[p][j][i - 1] + K[p][j][i]) * 0.5;
+//                KWest[j][i] = 2. * (K[p][j ][i- 1] * K[p][j][i]) / (K[p][j ][i- 1] + K[p][j][i]);
+//                KWest[j][i] = K[p][j ][i- 1] ;
 
             } else {
 //                KWest[j][i] = 0.;
                 KWest[j][i] = sqrt(K[p][j][Nx - 1] * K[p][j][i]); // Periodic boundary condition
+//                KWest[j][i] = (K[p][j][Nx - 1] + K[p][j][i]) * 0.5; // Periodic boundary condition
+//                KWest[j][i] = 2. * (K[p][j ][Nx- 1] * K[p][j][i]) / (K[p][j ][Nx- 1] + K[p][j][i]);
+//                KWest[j][i] = K[p][j][Nx - 1] ; // Periodic boundary condition
+
+
+
 
             }
 
             if (i < Nx - 1) {
                 KEast[j][i] = sqrt(K[p][j][i + 1] * K[p][j][i]);
-//                KEast[j][i] = (K[j][i + 1] + K[j][i]) * 0.5;
+//                KEast[j][i] = (K[p][j][i + 1] + K[p][j][i]) * 0.5;
+//                KEast[j][i] = 2. * (K[p][j ][i + 1] * K[p][j][i]) / (K[p][j ][i + 1] + K[p][j][i]);
+//                KEast[j][i] = K[p][j ][i] ;
+
 
             } else {
 //                KEast[j][i] = 0.;
                 KEast[j][i] = sqrt(K[p][j][0] * K[p][j][i]); // Periodic boundary condition
+//                KEast[j][i] = (K[p][j][0] + K[p][j][i]) * 0.5; // Periodic boundary condition
+//                KEast[j][i] = 2. * (K[p][j ][0] * K[p][j][i]) / (K[p][j ][0] + K[p][j][i]);
+//                KEast[j][i] =  K[p][j][i];
+
 
             }
 
