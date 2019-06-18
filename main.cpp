@@ -49,13 +49,13 @@ int main() {
             s = 0.6,
             dt_new,
             relative_error,
-            dt_ini = 0.1,
+            dt_ini = 0.001,
             theta_ini = epsilon,
             dt,
             Hn_ini = 0., // Input flux for melt [W/m2]
             rhoI = 917., // density of ice [kg/m3]
             error = 0,
-            dryRho_ini = 300,
+            dryRho_ini = 300.,
             Dgrain_ini = 1e-3,
             Qflux,
             Qbottom = 0., // Heat flux at the bottom of the snowpack [w/m2]
@@ -137,14 +137,14 @@ int main() {
                 y[j][i] = (Ly_ini / double(Ny)) + y[j - 1][i];
             }
 
-            std::normal_distribution<double> r{dryRho_ini, dryRho_ini * 0.05};
-            std::normal_distribution<double> d{Dgrain_ini, Dgrain_ini * 0.05};
+//            std::normal_distribution<double> r{dryRho_ini, dryRho_ini * 0.1};
+//            std::normal_distribution<double> d{Dgrain_ini, Dgrain_ini * 0.1};
+//
+//            dryRho[j][i] = r(gen)  ;
+//            Dgrain[j][i] = d(gen)  ;
 
-            dryRho[j][i] = r(gen)  ;
-            Dgrain[j][i] = d(gen)  ;
-
-//            dryRho[j][i] = dryRho_ini  ;
-//            Dgrain[j][i] = Dgrain_ini  ;
+            dryRho[j][i] = dryRho_ini  ;
+            Dgrain[j][i] = Dgrain_ini  ;
 
 //            if (y[j][i] > 0.3) {
 //                std::normal_distribution<double> o{0.5e-3, 0.5e-3 * 0.02};
@@ -153,7 +153,7 @@ int main() {
 
             gamma[j][i] = 2.;
 
-            tau[j][i] = 10.;
+            tau[j][i] = 0.;
 
             tau_output << tau[j][i] << " " ;
 
@@ -163,7 +163,9 @@ int main() {
 
             alpha[j][i] = 4.4e6 * pow(dryRho[j][i] / Dgrain[j][i], -0.98);
 
-            alphaW[j][i] = gamma[j][i] * alpha[j][i];           n[j][i] = 1. + 2.7e-3 * pow(dryRho[j][i] / Dgrain[j][i], 0.61);
+            alphaW[j][i] = gamma[j][i] * alpha[j][i];
+
+            n[j][i] = 1. + 2.7e-3 * pow(dryRho[j][i] / Dgrain[j][i], 0.61);
 
             Ks[j][i] = 9.81 / nu * 3. * pow(Dgrain[j][i] * 0.5, 2.) * exp(-0.013 * dryRho[j][i]);
 
@@ -524,16 +526,16 @@ int main() {
 
 
                 T[j][i] = T_new[j][i];
+
+//                alpha[j][i] = 4.4e6 * pow(dryRho[j][i] / Dgrain[j][i], -0.98);
+//                alphaW[j][i] = gamma[j][i] * alpha[j][i];
+//                n[j][i] = 1. + 2.7e-3 * pow(dryRho[j][i] / Dgrain[j][i], 0.61);
+//                Ks[j][i] = 9.81 / nu * 3. * pow(Dgrain[j][i] * 0.5, 2.) * exp(-0.013 * dryRho[j][i]);
 //
-                alpha[j][i] = 4.4e6 * pow(dryRho[j][i] / Dgrain[j][i], -0.98);
-                alphaW[j][i] = gamma[j][i] * alpha[j][i];
-                n[j][i] = 1. + 2.7e-3 * pow(dryRho[j][i] / Dgrain[j][i], 0.61);
-                Ks[j][i] = 9.81 / nu * 3. * pow(Dgrain[j][i] * 0.5, 2.) * exp(-0.013 * dryRho[j][i]);
-
-                double Kw = 0.569;
-
-                Keff[j][i] = (2.5e-6 * pow(dryRho[j][i], 2.) - 1.23e-4 * dryRho[j][i] + 0.024) * (1. - theta[j][i]) +
-                             theta[j][i] * Kw;
+//                double Kw = 0.569;
+//
+//                Keff[j][i] = (2.5e-6 * pow(dryRho[j][i], 2.) - 1.23e-4 * dryRho[j][i] + 0.024) * (1. - theta[j][i]) +
+//                             theta[j][i] * Kw;
 
             }
         }

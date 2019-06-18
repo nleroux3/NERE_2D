@@ -27,38 +27,79 @@ Eigen::VectorXd Richards(const double& dx, const double& dy, const int& p, const
 
 
             if (j > 0) {
-//                KSouth[j][i] = sqrt(K[p][j - 1][i] * K[p][j][i]);
-                KSouth[j][i] = (K[p][j - 1][i] + K[p][j][i])  * 0.5;
-//                KSouth[j][i] = 2. * (K[p][j - 1][i] * K[p][j][i]) / (K[p][j - 1][i] + K[p][j][i]);
+                KSouth[j][i] = sqrt(K[p][j - 1][i] * K[p][j][i]);
+//                KSouth[j][i] = (K[p][j - 1][i] + K[p][j][i])  * 0.5;
+
+//                if (K[p][j-1][i] == K[p][j][i]) {
+//                    KSouth[j][i] = K[p][j][i];
+//                } else {
+//                    KSouth[j][i] = (K[p][j][i] - K[p][j - 1][i]) / log(K[p][j][i] / K[p][j - 1][i]);
+//                }
+
+                //                KSouth[j][i] = 1. / (1./K[p][j - 1][i] + 1./K[p][j][i]);
 //                KSouth[j][i] = K[p][j][i];
+
+//                double r;
+//
+//                if (j < M-1) {
+//                    r = (K[p][j+1][i] - K[p][j][i]) / (K[p][j][i] - K[p][j-1][i]);
+//                } else { // KSouth for the top boundary (no j+1) (assuming that K(j+1) = K(j)
+//                    r = 0.;
+//                }
+//
+//                double phi = std::max(0.,std::min(r, 1.));
+//
+//                KSouth[j][i] = K[p][j][i] - phi * (K[p][j][i] - K[p][j-1][i]) * dy * 0.5;
 
 
             } else {
                 KSouth[j][i] = K[p][j][i];
             }
 
-            if (j < Ny - 1) {
+            if (j < M - 1) {
                 KNorth[j][i] = sqrt(K[p][j + 1][i] * K[p][j][i]);
 //                KNorth[j][i] = (K[p][j + 1][i] + K[p][j][i]) * 0.5;
 
-//                KNorth[j][i] = 2. * (K[p][j + 1][i] * K[p][j][i]) / (K[p][j + 1][i] + K[p][j][i]);
+//                if (K[p][j+1][i] == K[p][j][i]) {
+//                    KNorth[j][i] = K[p][j+1][i];
+//                } else {
+//                    KNorth[j][i] = (K[p][j+1][i] - K[p][j][i])  / log(K[p][j+1][i] / K[p][j][i]);
+//                }
+//                KNorth[j][i] = 1. / (1./K[p][j + 1][i] + 1./K[p][j][i]);
 //                KNorth[j][i] = K[p][j + 1][i] ;
+
+
+//                double r;
+//
+//                if (j < M-2) {
+//                    r = (K[p][j+2][i] - K[p][j+1][i]) / (K[p][j+1][i] - K[p][j][i]);
+//                } else { // KSouth for the top boundary (no j+1) (assuming that K(j+1) = K(j)
+//                    r = 0.;
+//                }
+//
+//                double phi = std::max(0.,std::min(r, 1.));
+//
+//                KNorth[j][i] = K[p][j+1][i] - phi * (K[p][j+1][i] - K[p][j][i]) * dy * 0.5;
+
+
 
             } else {
                 KNorth[j][i] = K[p][j][i];
             }
 
             if (i > 0) {
-                KWest[j][i] = sqrt(K[p][j][i - 1] * K[p][j][i]);
+//                KWest[j][i] = sqrt(K[p][j][i - 1] * K[p][j][i]);
 //                KWest[j][i] = (K[p][j][i - 1] + K[p][j][i]) * 0.5;
-//                KWest[j][i] = 2. * (K[p][j ][i- 1] * K[p][j][i]) / (K[p][j ][i- 1] + K[p][j][i]);
+//                KWest[j][i] = 1. / (1./K[p][j][i- 1] + 1./K[p][j][i]);
 //                KWest[j][i] = K[p][j ][i- 1] ;
+                KWest[j][i] = 0. ;
+
 
             } else {
-//                KWest[j][i] = 0.;
-                KWest[j][i] = sqrt(K[p][j][Nx - 1] * K[p][j][i]); // Periodic boundary condition
+                KWest[j][i] = 0.;
+//                KWest[j][i] = sqrt(K[p][j][Nx - 1] * K[p][j][i]); // Periodic boundary condition
 //                KWest[j][i] = (K[p][j][Nx - 1] + K[p][j][i]) * 0.5; // Periodic boundary condition
-//                KWest[j][i] = 2. * (K[p][j ][Nx- 1] * K[p][j][i]) / (K[p][j ][Nx- 1] + K[p][j][i]);
+//                KWest[j][i] = 1. / (1./K[p][j][Nx- 1] + 1./K[p][j][i]);
 //                KWest[j][i] = K[p][j][Nx - 1] ; // Periodic boundary condition
 
 
@@ -67,18 +108,20 @@ Eigen::VectorXd Richards(const double& dx, const double& dy, const int& p, const
             }
 
             if (i < Nx - 1) {
-                KEast[j][i] = sqrt(K[p][j][i + 1] * K[p][j][i]);
+//                KEast[j][i] = sqrt(K[p][j][i + 1] * K[p][j][i]);
 //                KEast[j][i] = (K[p][j][i + 1] + K[p][j][i]) * 0.5;
-//                KEast[j][i] = 2. * (K[p][j ][i + 1] * K[p][j][i]) / (K[p][j ][i + 1] + K[p][j][i]);
+//                KEast[j][i] = 1. / (1./K[p][j][i + 1] + 1./K[p][j][i]);
 //                KEast[j][i] = K[p][j ][i] ;
+                KEast[j][i] = 0. ;
 
 
             } else {
 //                KEast[j][i] = 0.;
-                KEast[j][i] = sqrt(K[p][j][0] * K[p][j][i]); // Periodic boundary condition
+//                KEast[j][i] = sqrt(K[p][j][0] * K[p][j][i]); // Periodic boundary condition
 //                KEast[j][i] = (K[p][j][0] + K[p][j][i]) * 0.5; // Periodic boundary condition
-//                KEast[j][i] = 2. * (K[p][j ][0] * K[p][j][i]) / (K[p][j ][0] + K[p][j][i]);
+//                KEast[j][i] = 1. / (  1./K[p][j][0] + 1./K[p][j][i]);
 //                KEast[j][i] =  K[p][j][i];
+                KEast[j][i] = 0. ;
 
 
             }

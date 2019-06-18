@@ -20,7 +20,6 @@ endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Winline")
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)
-
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O1")
 else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O3")
@@ -30,4 +29,3 @@ add_executable(NERE_2D main.cpp Richards.cpp Richards.h global.h KFun.cpp KFun.h
 
 
 target_link_libraries(NERE_2D ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} Eigen3::Eigen)
-
