@@ -49,7 +49,7 @@ int main() {
             s = 0.6,
             dt_new,
             relative_error,
-            dt_ini = 0.005,
+            dt_ini = 0.01,
             theta_ini = epsilon,
             dt,
             Hn_ini = 0., // Input flux for melt [W/m2]
@@ -477,7 +477,6 @@ int main() {
                 double theta_f = (-rhoCp * T_new[j][i]) / (Lf * rhoW);
 
 
-
                 if (T_new[j][i] < 0.) {
                     if (theta_f + epsilon < theta_new[j][i]) { //   not all liquid water content refreezes
 
@@ -497,6 +496,7 @@ int main() {
 
                     }
 
+                    std::cout << 222 << " " << i <<" " << j << " " << T_new[j][i] << " " << theta_new[j][i] << " " << dryRho[j][i] << std::endl;
 
                 }
 
