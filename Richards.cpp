@@ -27,8 +27,8 @@ Eigen::VectorXd Richards(const double& dx, const double& dy, const int& p, const
 
 
             if (j > 0) {
-                KSouth[j][i] = sqrt(K[p][j - 1][i] * K[p][j][i]);
-//                KSouth[j][i] = (K[p][j - 1][i] + K[p][j][i])  * 0.5;
+//                KSouth[j][i] = sqrt(K[p][j - 1][i] * K[p][j][i]);
+                KSouth[j][i] = (K[p][j - 1][i] + K[p][j][i])  * 0.5;
 
 //                if (K[p][j-1][i] == K[p][j][i]) {
 //                    KSouth[j][i] = K[p][j][i];
@@ -57,8 +57,8 @@ Eigen::VectorXd Richards(const double& dx, const double& dy, const int& p, const
             }
 
             if (j < M - 1) {
-                KNorth[j][i] = sqrt(K[p][j + 1][i] * K[p][j][i]);
-//                KNorth[j][i] = (K[p][j + 1][i] + K[p][j][i]) * 0.5;
+//                KNorth[j][i] = sqrt(K[p][j + 1][i] * K[p][j][i]);
+                KNorth[j][i] = (K[p][j + 1][i] + K[p][j][i]) * 0.5;
 
 //                if (K[p][j+1][i] == K[p][j][i]) {
 //                    KNorth[j][i] = K[p][j+1][i];
@@ -162,7 +162,7 @@ Eigen::VectorXd Richards(const double& dx, const double& dy, const int& p, const
 
             } else if (j == Ny - 1) { //======== TOP BOUNDARY ==================================
 
-                    coeffs.emplace_back(Tr(k,k,1. + tau[j][i] * ((KWest[j][i] + KEast[j][i]) / pow(dx, 2.)
+                    coeffs.emplace_back(Tr(k, k, 1. + tau[j][i] * ((KWest[j][i] + KEast[j][i]) / pow(dx, 2.)
                                              + KSouth[j][i] / pow(dy_top[i], 2.))));
 
                 if (i > 0 && i < Nx - 1) {
@@ -190,7 +190,7 @@ Eigen::VectorXd Richards(const double& dx, const double& dy, const int& p, const
             } else {
 
 
-                coeffs.emplace_back(Tr(k,k,1. + tau[j][i] * ((KWest[j][i] + KEast[j][i]) / pow(dx, 2.)
+                coeffs.emplace_back(Tr(k,k, 1. + tau[j][i] * ((KWest[j][i] + KEast[j][i]) / pow(dx, 2.)
                                               + (KSouth[j][i] + KNorth[j][i]) / pow(dy, 2.))));
                 if (i == 0) {
 
@@ -219,13 +219,13 @@ Eigen::VectorXd Richards(const double& dx, const double& dy, const int& p, const
             }
 
             if (i > 0) {
-                coeffs.emplace_back(Tr(k,k-1,-tau[j][i - 1] * KWest[j][i] / pow(dx, 2.)));
+                coeffs.emplace_back(Tr(k,k-1, -tau[j][i - 1] * KWest[j][i] / pow(dx, 2.)));
             } else {
-                coeffs.emplace_back(Tr(k,(j + 1) * Nx - 1,-tau[j][Nx - 1] * KWest[j][i] / pow(dx, 2.)));
+                coeffs.emplace_back(Tr(k,(j + 1) * Nx - 1, -tau[j][Nx - 1] * KWest[j][i] / pow(dx, 2.)));
             }
 
             if (i < Nx - 1) {
-                coeffs.emplace_back(Tr(k,k+1,-tau[j][i + 1] * KEast[j][i] / pow(dx, 2.)));
+                coeffs.emplace_back(Tr(k,k+1, -tau[j][i + 1] * KEast[j][i] / pow(dx, 2.)));
             } else {
                 coeffs.emplace_back(Tr(k, j*Nx, -tau[j][0] * KEast[j][i] / pow(dx, 2.)));
             }
@@ -250,8 +250,10 @@ Eigen::VectorXd Richards(const double& dx, const double& dy, const int& p, const
   Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cg;
   cg.compute(Mat);
 
+
   Eigen::VectorXd delta_theta = cg.solve(F);
   return delta_theta;
+
 
 }
 

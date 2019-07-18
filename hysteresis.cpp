@@ -34,9 +34,9 @@ hysteresis(const double& theta_1, const double& theta_2,  double theta_s,  doubl
             theta_s = thetaS;
             theta_r = thetaR;
 
-            Swf[1][j][i] = theta_2 / thetaS;
+            Swf[1][j][i] = theta_2 / thetaS ;
 
-            psi[1][j][i] = -pow(pow(theta_2 / thetaS, -1. / m) - 1., 1. / n[j][i]) / alphaW[j][i];
+            psi[1][j][i] = -pow(pow(theta_2 / thetaS , -1. / m) - 1., 1. / n[j][i]) / alphaW[j][i];
 
         } else { // Moves to scanning drying curve
 
@@ -47,8 +47,7 @@ hysteresis(const double& theta_1, const double& theta_2,  double theta_s,  doubl
             theta_r = thetaR;
 
             Swf[1][j][i] = 0.5 * ((theta_2 / thetaS - thetaR / thetaS) + sqrt(pow(theta_2 / thetaS - thetaR / thetaS, 2.) + 4. /
-                                                                                                                   (thetaS / thetaR_dry - 1.) * (theta_2 / thetaS - thetaR / thetaS)));
-
+                                                                                                                   (thetaS / thetaR_dry - 1.) * (theta_2 / thetaS - thetaR / thetaS)));;
             Sd_Pid = pow(1. + pow(-alpha[j][i]* Pid, n[j][i]), -m);
 
             theta_s = (theta_1 - thetaR * (1.-Sd_Pid)) / Sd_Pid;

@@ -37,26 +37,26 @@ int main() {
     double  Lx = 0.5, // [m]
             Ly_ini = 0.5,
             nu = 1.7e-6,
-            tf = 3600. ,
+            tf = 3600./2.  ,
             thetaR_dry = 0.02,
             qIn_ini = 10e-3/3600. ,  // Input flux [m/s]
             epsilon = 1e-6,
             tolerance = 0.01, // relative truncation error tolerances
             r_min = 0.1,
             Ts_ini = 0., // Initial snow surface temperature assumed constant [C]
-            T_ini = -5., // Initial snow internal tempeature assumed constant [C]
+            T_ini = 0., // Initial snow internal tempeature assumed constant [C]
             EPS = 1e-10,
             s = 0.6,
             dt_new,
             relative_error,
-            dt_ini = 0.001,
+            dt_ini = 0.005,
             theta_ini = epsilon,
             dt,
             Hn_ini = 0., // Input flux for melt [W/m2]
             rhoI = 917., // density of ice [kg/m3]
             error = 0,
             dryRho_ini = 300.,
-            Dgrain_ini = 1e-3,
+            Dgrain_ini = 1.e-3,
             Qflux,
             Qbottom = 0., // Heat flux at the bottom of the snowpack [w/m2]
             Hn;
@@ -153,7 +153,7 @@ int main() {
 
             gamma[j][i] = 2.;
 
-            tau[j][i] = 0.;
+            tau[j][i] = 5.;
 
             tau_output << tau[j][i] << " " ;
 
@@ -242,14 +242,14 @@ int main() {
                                 (Keff[j + 1][i] + Keff[j][i]) * 0.5 * (T[j + 1][i] - T[j][i]) +
                                 Qbottom) +
                                 1. / pow(dx, 2) * (
-                                        (Keff[j][i + 1] + Keff[j][i]) * 0.5 * (T[j][ i+ 1] - T[j][i]) +
+                                        (Keff[j][i + 1] + Keff[j][i]) * 0.5 * (T[j][i+  1] - T[j][i]) +
                                         (Keff[j][i - 1] + Keff[j][i]) * 0.5 * (T[j][i - 1] - T[j][i]))  ;
 
 
                     } else if (j == M - 1) { // top layer
                         Qflux = 1. / melt_layer[i] * (
                                 Hn +
-                                (Keff[j - 1][i] * Keff[j][i]) * 0.5 * (T[j - 1][i] - T[j][i]) / dy) +
+                                (Keff[j - 1][i] + Keff[j][i]) * 0.5 * (T[j - 1][i] - T[j][i]) / dy) +
                                 1. / pow(dx, 2) * (
                                         (Keff[j][i + 1] + Keff[j][i]) * 0.5 * (T[j][i + 1] - T[j][i]) +
                                         (Keff[j][i - 1] + Keff[j][i]) * 0.5 * (T[j][i - 1] - T[j][i]));
@@ -278,7 +278,7 @@ int main() {
                     } else if (j == M - 1) { // top layer
                         Qflux = 1. / melt_layer[i] * (
                                 Hn +
-                                (Keff[j - 1][i] * Keff[j][i]) * 0.5 * (T[j - 1][i] - T[j][i]) / dy) +
+                                (Keff[j - 1][i] + Keff[j][i]) * 0.5 * (T[j - 1][i] - T[j][i]) / dy) +
                                 1. / pow(dx, 2) *
                                 ((Keff[j][i + 1] + Keff[j][i]) * 0.5 * (T[j][i + 1] - T[j][i]) +
                                 (Keff[j][Nx - 1] + Keff[j][i]) * 0.5 * (T[j][Nx - 1] - T[j][i]));
@@ -308,7 +308,7 @@ int main() {
 
                         Qflux = 1. / melt_layer[i] * (
                                 Hn +
-                                (Keff[j - 1][i] * Keff[j][i]) * 0.5 * (T[j - 1][i] - T[j][i]) / dy) +
+                                (Keff[j - 1][i] + Keff[j][i]) * 0.5 * (T[j - 1][i] - T[j][i]) / dy) +
                                 1. / pow(dx, 2) * ((Keff[j][0] + Keff[j][i]) * 0.5 * (T[j][0] - T[j][i]) +
                                 (Keff[j][i - 1] + Keff[j][i]) * 0.5 * (T[j][i - 1] - T[j][i]));
 
@@ -320,6 +320,7 @@ int main() {
                 double rhoCp = rhoI * Cpi * (1. - porosity[j][i]) + rhoW * Cpw * theta[j][i];
 
                 T_new[j][i] = T[j][i] + dt * Qflux / rhoCp;
+
             }
 
         }
@@ -426,6 +427,8 @@ int main() {
                     theta_new[j][i] =
                             theta[j][i] + dt * 0.5 * (delta_theta(k) + delta_theta_p(k)); // new theta using Heun
 
+
+
                     if (theta_new[j][i] > (0.9 * porosity[j][i] - epsilon)) { // If it goes above saturation, move water to cell below
                         delta_theta(k-Nx) +=  (theta_new[j][i] - (0.9 * porosity[j][i] - epsilon))/ (0.5 * dt) ;
                         theta_new[j][i] = 0.9 * porosity[j][i] - epsilon;
@@ -473,9 +476,7 @@ int main() {
 
                 double theta_f = (-rhoCp * T_new[j][i]) / (Lf * rhoW);
 
-//                if (j == M-2 and i == 2) {
-//                    std::cout << 111 << " " << theta_new[j][i] << " " << T_new[j][i] << std::endl;
-//                }
+
 
                 if (T_new[j][i] < 0.) {
                     if (theta_f + epsilon < theta_new[j][i]) { //   not all liquid water content refreezes
@@ -495,9 +496,6 @@ int main() {
                         dryRho[j][i] = thetaI * rhoI;
 
                     }
-//                    if (j == M-2 and i == 2) {
-//                        std::cout << 222 << " " << theta_new[j][i] << " " << T_new[j][i] << std::endl;
-//                    }
 
 
                 }
@@ -513,6 +511,16 @@ int main() {
         for (int j = 0; j < M; ++j) {
             for (int i = 0; i < Nx; ++i) {
 
+                alpha[j][i] = 4.4e6 * pow(dryRho[j][i] / Dgrain[j][i], -0.98);
+                alphaW[j][i] = gamma[j][i] * alpha[j][i];
+                n[j][i] = 1. + 2.7e-3 * pow(dryRho[j][i] / Dgrain[j][i], 0.61);
+                Ks[j][i] = 9.81 / nu * 3. * pow(Dgrain[j][i] * 0.5, 2.) * exp(-0.013 * dryRho[j][i]);
+
+                double Kw = 0.569;
+
+                Keff[j][i] = (2.5e-6 * pow(dryRho[j][i], 2.) - 1.23e-4 * dryRho[j][i] + 0.024) * (1. - theta_new[j][i]) +
+                             theta_new[j][i] * Kw;
+
                 auto outputs = hysteresis(theta[j][i], theta_new[j][i], theta_s[j][i], theta_r[j][i], 0.9 * porosity[j][i],
                                           thetaR[j][i], wrc[j][i], thetaR_dry, i, j);
 
@@ -527,15 +535,6 @@ int main() {
 
                 T[j][i] = T_new[j][i];
 
-//                alpha[j][i] = 4.4e6 * pow(dryRho[j][i] / Dgrain[j][i], -0.98);
-//                alphaW[j][i] = gamma[j][i] * alpha[j][i];
-//                n[j][i] = 1. + 2.7e-3 * pow(dryRho[j][i] / Dgrain[j][i], 0.61);
-//                Ks[j][i] = 9.81 / nu * 3. * pow(Dgrain[j][i] * 0.5, 2.) * exp(-0.013 * dryRho[j][i]);
-//
-//                double Kw = 0.569;
-//
-//                Keff[j][i] = (2.5e-6 * pow(dryRho[j][i], 2.) - 1.23e-4 * dryRho[j][i] + 0.024) * (1. - theta[j][i]) +
-//                             theta[j][i] * Kw;
 
             }
         }
