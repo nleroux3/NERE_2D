@@ -93,7 +93,6 @@ int main() {
 
     std::ofstream tau_output;
 
-    tau_output.open("tau.dat");
 
     std::ofstream theta_output;
 
@@ -122,6 +121,7 @@ int main() {
     double dx =  Lx / double(Nx);
     double dy =  Ly_ini / double(Ny);
 
+    // Initialize the model inputs and parameters
 
     for (int j = 0; j < Ny; ++j) {
         for (int i = 0; i < Nx; ++i) {
@@ -153,9 +153,7 @@ int main() {
 
             gamma[j][i] = 2.;
 
-            tau[j][i] = 5.;
-
-            tau_output << tau[j][i] << " " ;
+            tau[j][i] = std::max(0.748 + 0.346 * gamma[j][i] - 1.32e-3 * qIn_ini*3600*1e3 + 92.4 * Dgrain[j][i] -5.02e-4 * gamma[j][i] * qIn_ini*3600*1e3 - 308. * gamma[j][i] * Dgrain[j][i] + 0.976 * qIn_ini*3600*1e3 * Dgrain[j][i], 0.);
 
             porosity[j][i] = 1. - dryRho[j][i] / rhoI;
 
@@ -205,7 +203,6 @@ int main() {
         }
     }
 
-    tau_output.close();
 
     // =================================================================================================
     // ============================ Main loop through time =============================================
@@ -222,6 +219,8 @@ int main() {
         //=================================================================================
 
         Hn = Hn_ini;
+
+
 
         for (int j = 0; j < M; ++j) {
             for (int i = 0 ; i < Nx ; ++i) {
@@ -345,8 +344,7 @@ int main() {
                         Hn = 0.;
                     }
 
-                if (T[M - 1][i] == 0.) {
-
+                if (T[M - 1][i] == 0.) { // Upper layer is at 0oC, melt occurs
 
                     qIn[i] = melt(Hn, dryRho[M - 1][i], theta[M - 1][i], Ly[i], y[M-1][i], Ly_ini, dt);
 
@@ -395,13 +393,21 @@ int main() {
 
                     theta_p[j][i] = theta[j][i] + dt * delta_theta_p(k); // new theta predicted using Euler
 
-                    if (theta_p[j][i] > (0.9 * porosity[j][i] - epsilon) and j > 0) { // If it goes above saturation, move water to cell below
+                    // If it goes above saturation, move to boundary drying curve. Avoid model divergence
+                    if (theta_p[j][i] > (0.9 * porosity[j][i] - epsilon) and j > 0) {
+
                         delta_theta_p(k-Nx) += (theta_p[j][i] - (0.9 * porosity[j][i] - epsilon))/dt;
                         theta_p[j][i] = 0.9 * porosity[j][i] - epsilon;
+                        wrc[j][i] = 5; // Move directly to drying curve
+
+
+                    } else if (theta_p[j][i] > (0.9 * porosity[j][i] - epsilon) and j == 0 ) {
+                        theta_p[j][i] = 0.9 * porosity[j][i] - epsilon;
+                        wrc[j][i] = 5; // Move directly to drying curve
                     }
 
 
-
+                    // Compute capillary pressure and hydraulic conductivity for the intermediate water content (theta_p)
                     auto outputs = hysteresis(theta[j][i], theta_p[j][i], theta_s[j][i], theta_r[j][i],
                                               0.9 * porosity[j][i],
                                               thetaR[j][i], wrc[j][i], thetaR_dry, i, j);
@@ -415,7 +421,6 @@ int main() {
 
             //==================== Compute theta_new (forward Heun) =========================
 
-
             Eigen::VectorXd delta_theta = Richards(dx, dy, 1, M, melt_layer);
 
 
@@ -428,13 +433,17 @@ int main() {
                             theta[j][i] + dt * 0.5 * (delta_theta(k) + delta_theta_p(k)); // new theta using Heun
 
 
-
-                    if (theta_new[j][i] > (0.9 * porosity[j][i] - epsilon)) { // If it goes above saturation, move water to cell below
+                    // If it goes above saturation, move to boundary drying curve. Avoid model divergence
+                    if (theta_new[j][i] > (0.9 * porosity[j][i] - epsilon) and j > 0) { // If it goes above saturation, stop model
                         delta_theta(k-Nx) +=  (theta_new[j][i] - (0.9 * porosity[j][i] - epsilon))/ (0.5 * dt) ;
                         theta_new[j][i] = 0.9 * porosity[j][i] - epsilon;
+                        wrc[j][i] = 5; // Move directly to drying curve
+                    }  else if (theta_new[j][i] > (0.9 * porosity[j][i] - epsilon) and j == 0 ) {
+                        theta_new[j][i] = 0.9 * porosity[j][i] - epsilon;
+                        wrc[j][i] = 5; // Move directly to drying curve
                     }
 
-                    //==================== Calculate error  =========================
+                    //==================== Calculate error between intermediate value and final theta from Heun's method  =========================
                     error = abs(theta_p[j][i] - theta_new[j][i]) / theta_new[j][i];
 
                     if (k == 0) {
@@ -444,7 +453,6 @@ int main() {
                     }
 
                     k -= 1;
-
 
                 }
             }
@@ -462,7 +470,6 @@ int main() {
 
             }
 
-
         } // end while convergence loop
 
         //=================================================================================
@@ -472,12 +479,12 @@ int main() {
         for (int j = 0; j < M; ++j) {
             for (int i = 0; i < Nx; ++i) {
 
-                double rhoCp = rhoI * Cpi * (1. - porosity[j][i]) + rhoW * Cpw * theta[j][i];
-
-                double theta_f = (-rhoCp * T_new[j][i]) / (Lf * rhoW);
-
-
                 if (T_new[j][i] < 0.) {
+
+                    double rhoCp = rhoI * Cpi * (1. - porosity[j][i]) + rhoW * Cpw * theta[j][i];
+
+                    double theta_f = (-rhoCp * T_new[j][i]) / (Lf * rhoW); // total amount of liquid water that can refreeze
+
                     if (theta_f + epsilon < theta_new[j][i]) { //   not all liquid water content refreezes
 
                         T_new[j][i] = 0.;
@@ -496,11 +503,7 @@ int main() {
 
                     }
 
-                    std::cout << 222 << " " << i <<" " << j << " " << T_new[j][i] << " " << theta_new[j][i] << " " << dryRho[j][i] << std::endl;
-
                 }
-
-
             }
         }
 
@@ -524,7 +527,6 @@ int main() {
                 auto outputs = hysteresis(theta[j][i], theta_new[j][i], theta_s[j][i], theta_r[j][i], 0.9 * porosity[j][i],
                                           thetaR[j][i], wrc[j][i], thetaR_dry, i, j);
 
-
                 std::tie(thetaR[j][i], theta_s[j][i], theta_r[j][i], wrc[j][i]) = outputs;
 
                 psi[0][j][i] = psi[1][j][i];
@@ -532,9 +534,7 @@ int main() {
                 Swf[0][j][i] = Swf[1][j][i];
                 K[0][j][i]  =  KFun(Ks[j][i], 0, i, j);
 
-
                 T[j][i] = T_new[j][i];
-
 
             }
         }
@@ -542,7 +542,6 @@ int main() {
         //=================================================================================
         //================================ Update time  ===================================
         //=================================================================================
-
         time = time + dt;
 
 

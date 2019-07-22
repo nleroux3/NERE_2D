@@ -183,5 +183,29 @@ hysteresis(const double& theta_1, const double& theta_2,  double theta_s,  doubl
         }
     }
 
+
+    if (wrc_ini == 5) { // On main drying curve
+
+        wrc = 2;
+
+        thetaR = thetaR_dry;
+        theta_s = thetaS;
+        theta_r = thetaR;
+
+
+
+        Swf[1][j][i] = 0.5 * ((theta_2 / thetaS - thetaR / thetaS) + sqrt(pow(theta_2 / thetaS - thetaR / thetaS, 2.) + 4. /
+                                                                                                                        (thetaS /
+                                                                                                                         thetaR_dry -
+                                                                                                                         1.) *
+                                                                                                                        (theta_2 /
+                                                                                                                         thetaS -
+                                                                                                                         thetaR /
+                                                                                                                         thetaS)));
+
+        psi[1][j][i] = -pow(pow((theta_2 - thetaR) / (thetaS - thetaR), -1. / m) - 1., 1. / n[j][i]) / alpha[j][i];
+
+    }
+
     return std::make_tuple(thetaR, theta_s, theta_r, wrc);
 }

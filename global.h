@@ -6,8 +6,8 @@
 #include <Eigen/SparseLU>
 using namespace Eigen;
 
-const int Nx = 1,  // Number of cells in lateral direction
-          Ny = 2000;  // Number of cells in vertical direction
+const int Nx = 100,  // Number of cells in lateral direction
+          Ny = 100;  // Number of cells in vertical direction
 
 
 extern double  alpha[Ny][Nx],
