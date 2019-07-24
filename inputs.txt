@@ -1,0 +1,14 @@
+0.5    	Horizontal length of snowpack [m]
+0.5	   	Snowpack depth [m]   
+50    	Nb of horizontal nodes  N
+100    	Nb of vertical nodes  M
+60 	   	Time step for plotting [s]
+3600.  	Final time of simulation [s]     
+0.1    	Default time step [s]
+0.1    	Standard deviation (% of mean values) for perturbation in grain size and density
+0.001   Rain influx [m/hr]
+0.	 	Constant heat flux at surface [W/m2]
+Initial dry Density (kg/m3)         	water_content (decimal value)          optical_ grain_size(diameter)[m]
+300. 0.0 0.001 
+Initial snow layer temperatures [oC] (from bottom to top)
+0.

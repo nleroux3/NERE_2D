@@ -13,33 +13,38 @@
 #include "global.h"
 #include <Eigen/Sparse>
 #include <fstream>
+#include <vector>
 
-double  alpha[Ny][Nx],
-        n[Ny][Nx],
-        porosity[Ny][Nx],
-        Ks[Ny][Nx],
-        psi[2][Ny][Nx],
-        K[2][Ny][Nx],
-        alphaW[Ny][Nx],
-        Swf[2][Ny][Nx],
-        tau[Ny][Nx],
-        qIn[Nx],
-        Ts[Nx],
-        T[Ny][Nx],
-        Keff[Ny][Nx];
+int Nx, Ny;
 
+
+std::vector<std::vector<std::vector<double>>> psi,
+                                              K,
+                                              Swf;
+
+std::vector<std::vector<double>> alpha,
+                                 n,
+                                 porosity,
+                                 Ks,
+                                 alphaW,
+                                 tau,
+                                 T,
+                                 Keff;
+
+std::vector<double> qIn,
+                    Ts;
 
 int main() {
 
     clock_t tStart = clock();
 
 
-    double  Lx = 0.5, // [m]
-            Ly_ini = 0.5,
+    double Lx, // [m]
+            Ly_ini,
             nu = 1.7e-6,
-            tf = 3600./2.  ,
+            tf ,
             thetaR_dry = 0.02,
-            qIn_ini = 10e-3/3600. ,  // Input flux [m/s]
+            qIn_ini ,  // Input flux [m/s]
             epsilon = 1e-6,
             tolerance = 0.01, // relative truncation error tolerances
             r_min = 0.1,
@@ -49,20 +54,110 @@ int main() {
             s = 0.6,
             dt_new,
             relative_error,
-            dt_ini = 0.01,
-            theta_ini = epsilon,
+            dt_ini ,
+            theta_ini,
             dt,
             Hn_ini = 0., // Input flux for melt [W/m2]
             rhoI = 917., // density of ice [kg/m3]
             error = 0,
-            dryRho_ini = 300.,
-            Dgrain_ini = 1.e-3,
+            dryRho_ini,
+            Dgrain_ini ,
             Qflux,
             Qbottom = 0., // Heat flux at the bottom of the snowpack [w/m2]
-            Hn;
+            Hn,
+            sigma;
+
+    int tPlot; // Time interval for plotting [s]
 
 
-    const int tPlot = 60; // Time interval for plotting [s]
+
+    // read inputs from input file
+
+    std::ifstream infile;
+
+    infile.open("../inputs.txt");
+
+    if (!infile) {
+        std::cerr << "Unable to open file inputs.txt";
+        exit(1);   // call system to stop
+    }
+
+    std::string str;
+
+    int line = 0;
+    while (std::getline (infile,str)){
+        line += 1;
+        if (line == 1){
+             std::stringstream geek(str);
+             geek >> Lx;
+        } else if (line == 2){
+            std::stringstream geek(str);
+            geek >> Ly_ini;
+        } else if (line == 3) {
+            std::stringstream geek(str);
+            geek >> Nx;
+        } else if (line == 4) {
+            std::stringstream geek(str);
+            geek >> Ny;
+        } else if (line == 5) {
+            std::stringstream geek(str);
+            geek >> tPlot;
+        } else if (line == 6) {
+            std::stringstream geek(str);
+            geek >> tf;
+        } else if (line == 7) {
+            std::stringstream geek(str);
+            geek >> dt_ini;
+        } else if (line == 8) {
+            std::stringstream geek(str);
+            geek >> sigma;
+        } else if (line == 9) {
+            std::stringstream geek(str);
+            geek >> qIn_ini;
+            qIn_ini = qIn_ini / 3600. ; // [m/hr] to [m/s]
+        } else if (line == 10) {
+            std::stringstream geek(str);
+            geek >> Hn_ini;
+        } else if (line == 12) {
+            std::stringstream geek(str);
+            geek >> dryRho_ini >> theta_ini >> Dgrain_ini;
+            theta_ini = std::max(theta_ini,epsilon);
+        } else if (line == 13) {
+            std::stringstream geek(str);
+            geek >> T_ini;
+        }
+    }
+
+    infile.close();
+
+    alpha.resize(Ny, std::vector<double>(Nx));
+    n.resize(Ny, std::vector<double>(Nx));
+    porosity.resize(Ny, std::vector<double>(Nx));
+    Ks.resize(Ny, std::vector<double>(Nx));
+    alphaW.resize(Ny, std::vector<double>(Nx));
+    tau.resize(Ny, std::vector<double>(Nx));
+    T.resize(Ny, std::vector<double>(Nx));
+    Keff.resize(Ny, std::vector<double>(Nx));
+    Ts.resize(Ny);
+    qIn.resize(Ny);
+
+    psi.resize(2);
+    Swf.resize(2);
+    K.resize(2);
+
+    for(int i=0; i<2; i++)
+    {
+        psi[i].resize(Ny);
+        K[i].resize(Ny);
+        Swf[i].resize(Ny);
+
+        for(int j=0; j < Ny;j++)
+        {
+            psi[i][j].resize(Nx);
+            Swf[i][j].resize(Nx);
+            K[i][j].resize(Nx);
+        }
+    }
 
 
     int     wrc[Ny][Nx], //  0 : initial condition is T, 1: initial condition is theta
@@ -137,14 +232,12 @@ int main() {
                 y[j][i] = (Ly_ini / double(Ny)) + y[j - 1][i];
             }
 
-//            std::normal_distribution<double> r{dryRho_ini, dryRho_ini * 0.1};
-//            std::normal_distribution<double> d{Dgrain_ini, Dgrain_ini * 0.1};
-//
-//            dryRho[j][i] = r(gen)  ;
-//            Dgrain[j][i] = d(gen)  ;
+            std::normal_distribution<double> r{dryRho_ini, dryRho_ini * sigma};
+            std::normal_distribution<double> d{Dgrain_ini, Dgrain_ini * sigma};
 
-            dryRho[j][i] = dryRho_ini  ;
-            Dgrain[j][i] = Dgrain_ini  ;
+            dryRho[j][i] = r(gen)  ;
+            Dgrain[j][i] = d(gen)  ;
+
 
 //            if (y[j][i] > 0.3) {
 //                std::normal_distribution<double> o{0.5e-3, 0.5e-3 * 0.02};
@@ -175,10 +268,12 @@ int main() {
 
             theta_r[j][i] = thetaR[j][i];
 
+
             auto outputs = hysteresis(theta[j][i], theta[j][i], theta_s[j][i], theta_r[j][i], 0.9 * porosity[j][i],
                                        thetaR[j][i], wrc[j][i], thetaR_dry, i, j);
 
             std::tie(thetaR[j][i], theta_s[j][i], theta_r[j][i], wrc[j][i]) = outputs;
+
 
 
             psi[0][j][i] = psi[1][j][i];
@@ -219,8 +314,6 @@ int main() {
         //=================================================================================
 
         Hn = Hn_ini;
-
-
 
         for (int j = 0; j < M; ++j) {
             for (int i = 0 ; i < Nx ; ++i) {
@@ -407,7 +500,7 @@ int main() {
                     }
 
 
-                    // Compute capillary pressure and hydraulic conductivity for the intermediate water content (theta_p)
+//                     Compute capillary pressure and hydraulic conductivity for the intermediate water content (theta_p)
                     auto outputs = hysteresis(theta[j][i], theta_p[j][i], theta_s[j][i], theta_r[j][i],
                                               0.9 * porosity[j][i],
                                               thetaR[j][i], wrc[j][i], thetaR_dry, i, j);
@@ -515,7 +608,7 @@ int main() {
             for (int i = 0; i < Nx; ++i) {
 
                 alpha[j][i] = 4.4e6 * pow(dryRho[j][i] / Dgrain[j][i], -0.98);
-                alphaW[j][i] = gamma[j][i] * alpha[j][i];
+                alphaW[j][i] = gamma[j][i] * alpha[j][ i];
                 n[j][i] = 1. + 2.7e-3 * pow(dryRho[j][i] / Dgrain[j][i], 0.61);
                 Ks[j][i] = 9.81 / nu * 3. * pow(Dgrain[j][i] * 0.5, 2.) * exp(-0.013 * dryRho[j][i]);
 
