@@ -183,8 +183,8 @@ int main() {
 
     std::random_device rd;
 //    std::mt19937 gen(5489u);
-    std::mt19937 gen{1};
-//    std::mt19937 gen{rd()};
+//    std::mt19937 gen{1};
+    std::mt19937 gen{rd()};
 
     std::ofstream tau_output;
 
@@ -645,7 +645,7 @@ int main() {
         if (time > 0 && int(time) % tPlot == 0) {
             if (int(time-dt) != int(time) ) {
 
-                std::cout << int(time / tPlot) << std::endl;
+                std::cout << "Time = " << int(time / tPlot) << " min" << std::endl;
                 height_output << M << " ";
 
                 for (int i = 0; i < Nx; ++i) {

@@ -8,4 +8,4 @@
 #include <Eigen/Sparse>
 #include<Eigen/IterativeLinearSolvers>
 
-Eigen::VectorXd Richards(const double& dx, const double& dy, const int& p, const int&  M, double dy_top[Nx]);
+Eigen::VectorXd Richards(const double& dx, const double& dy, const int& p, const int&  M, double dy_top[]);
